@@ -1,0 +1,47 @@
+* {
+    padding: 0px;
+    margin: 0px;
+}
+
+.card-img {
+    width: 350px;
+}
+
+.card-list {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.card {
+    margin: 10px;
+}
+
+.card-content-description {
+    display: flex;
+    flex-direction: column;
+    width: 100%
+}
+
+.card-content {
+    display: flex;
+    align-items: center;
+}
+
+.card-price {
+    color: green
+}
+
+.buy-button {
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    background: #4CAF50;
+    color: white
+}
+
+.title {
+    margin: 20px 10px;
+    text-align: center;
+}
