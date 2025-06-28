@@ -1,3 +1,5 @@
+Telegram.WebApp.ready();
+
 if (window.Telegram && Telegram.WebApp) {
     const user = Telegram.WebApp.initDataUnsafe.user;
     document.querySelector('.title').textContent = user.first_name
