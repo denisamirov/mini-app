@@ -17,11 +17,13 @@
 
 const container = document.querySelector('.card-list');
 
- container.innerHTML = '';
+container.innerHTML = '';
 
 const productTemplate = (product) => `
         <div class="card">
-            <img class="card-img" src="${product.image_url}" alt="картинка">
+            <a href="./product/product.html?id=${product.id}">
+                <img class="card-img" src="${product.image_url}" alt="картинка">
+            </a>
             <div class="card-content">
                 <div class="card-content-description">
                     <h2 class="card-price">${product.price}</h2>
