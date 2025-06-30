@@ -3,7 +3,7 @@
     margin: 0px;
 }
 
-.card-img {
+.card-list .card-img {
     width: 350px;
 }
 
@@ -14,8 +14,9 @@
     justify-content: center;
 }
 
-.card {
+.card-list .card {
     margin: 10px;
+    border: none
 }
 
 .card-content-description {
