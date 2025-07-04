@@ -1,23 +1,6 @@
+const container = document.querySelector('.card-list')
 
-// window.addEventListener('DOMContentLoaded', () => {
-
-//   if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
-
-//     Telegram.WebApp.ready();
-
-//     const user = Telegram.WebApp.initDataUnsafe?.user;
-//     if (user) {
-//       document.querySelector('.title').textContent = user.first_name;
-//     }
-//   } else {
-//     console.log("Telegram WebApp не обнаружен");
-//     document.querySelector('.title').textContent = 'dev';
-//   }
-// });
-
-const container = document.querySelector('.card-list');
-
-container.innerHTML = '';
+container.innerHTML = ''
 
 const productTemplate = (product) => `
         <div class="card">
@@ -27,20 +10,19 @@ const productTemplate = (product) => `
             <div class="card-content">
                 <div class="card-content-description">
                     <h2 class="card-price">${product.price}</h2>
-                    <p class="card-title">${product.name }</p>
+                    <p class="card-title">${product.name}</p>
                 </div>
                 <button class="buy-button">Добавить</button>
             </div>
         </div>
-
 `
 
-const response = await fetch('./goods.json');
+const response = await fetch('./goods.json')
 
-if (!response.ok) throw new Error('Ошибка загрузки товаров');
+if (!response.ok) throw new Error('Ошибка загрузки товаров')
 
 const goods = await response.json()
 
 goods.forEach(product => {
-  container.insertAdjacentHTML('beforeend', productTemplate(product));
+    container.insertAdjacentHTML('beforeend', productTemplate(product))
 });
