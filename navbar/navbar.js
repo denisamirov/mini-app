@@ -12,18 +12,40 @@ const loadBootstrapCSS = () => {
 const loadBootstrapJS = () => {
     const script = document.createElement('script')
     script.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js'
-    script.integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
+    script.integrity = "sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
     script.crossOrigin = 'anonymous'
     script.defer = true
     document.body.appendChild(script)
 }
 
 const loadNavBar = () => {
-    fetch('/navbar/navbar.html')
-        .then(res => res.text())
-        .then(html => {
-            document.body.insertAdjacentHTML('afterbegin', html)
-        })
+    const pathToTry = [
+        './navbar/navbar.html',
+        '../navbar/navbar.html'
+    ]
+
+    let currentAttempt = 0
+
+    const attemptFetch = () => {
+        fetch(pathToTry[currentAttempt])
+            .then(res => {
+                if (!res.ok) throw new Error('Navbar not found')
+                return res.text()
+            })
+            .then(html => {
+                document.body.insertAdjacentHTML('afterbegin', html)
+            })
+            .catch(err => {
+                currentAttempt++
+                if (currentAttempt < pathToTry.length) {
+                    attemptFetch()
+                } else {
+                    console.error('All attempts failed', err)
+                }
+            })
+    }
+
+    attemptFetch()
 }
 
 window.addEventListener('DOMContentLoaded', () => {
