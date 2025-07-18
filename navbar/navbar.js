@@ -19,8 +19,16 @@ const loadBootstrapJS = () => {
 }
 
 const loadNavBar = () => {
-    fetch('./navbar/navbar.html')
-        .then(res => res.text())
+    const path = '/navbar/navbar.html'
+    fetch(path)
+        .then(res => {
+            if (!res.ok) throw new Error('Navbar не найден')
+            else return res.text()
+        })
+        .catch(() => {
+            const newPath = '.' + path
+            fetch(newPath).then(res => res.text()) 
+        })
         .then(html => {
             document.body.insertAdjacentHTML('afterbegin', html)
         })
