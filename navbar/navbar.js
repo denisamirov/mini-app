@@ -19,19 +19,33 @@ const loadBootstrapJS = () => {
 }
 
 const loadNavBar = () => {
-    const path = '/navbar/navbar.html'
-    fetch(path)
-        .then(res => {
-            if (!res.ok) throw new Error('Navbar не найден')
-            else return res.text()
-        })
-        .catch(() => {
-            const newPath = '.' + path
-            fetch(newPath).then(res => res.text()) 
-        })
-        .then(html => {
-            document.body.insertAdjacentHTML('afterbegin', html)
-        })
+    const pathsToTry = [
+        '../navbar/navbar.html',
+        '/navbar/navbar.html'
+    ];
+    
+    let currentAttempt = 0;
+    
+    const attemptFetch = () => {
+        fetch(pathsToTry[currentAttempt])
+            .then(res => {
+                if (!res.ok) throw new Error('Navbar not found');
+                return res.text();
+            })
+            .then(html => {
+                document.body.insertAdjacentHTML('afterbegin', html);
+            })
+            .catch(err => {
+                currentAttempt++;
+                if (currentAttempt < pathsToTry.length) {
+                    attemptFetch()
+                } else {
+                    console.error('All attempts failed:', err);
+                }
+            });
+    };
+    
+    attemptFetch();
 }
 
 window.addEventListener('DOMContentLoaded', () => {
