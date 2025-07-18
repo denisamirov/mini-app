@@ -21,7 +21,7 @@ const loadBootstrapJS = () => {
 const loadNavBar = () => {
     const pathsToTry = [
         '../navbar/navbar.html',
-        './navbar/navbar.html'
+        '/navbar/navbar.html'
     ];
     
     let currentAttempt = 0;
