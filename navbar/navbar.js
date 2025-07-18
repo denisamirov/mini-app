@@ -19,7 +19,7 @@ const loadBootstrapJS = () => {
 }
 
 const loadNavBar = () => {
-    fetch('./navbar/navbar.html')
+    fetch('/navbar/navbar.html')
         .then(res => res.text())
         .then(html => {
             document.body.insertAdjacentHTML('afterbegin', html)
