@@ -1,3 +1,5 @@
+import { loadTelegramJS } from "../telegram.js"
+
 // Загрузка Bootstrap CSS
 const loadBootstrapCSS = () => {
     const link = document.createElement('link')
@@ -5,7 +7,7 @@ const loadBootstrapCSS = () => {
     link.rel = 'stylesheet'
     link.integrity = 'sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr'
     link.crossOrigin = 'anonymous'
-    document.head.appendChild(link)
+    document.head.insertBefore(link, document.head.firstChild)
 }
 
 // Загрузка Bootstrap JS
@@ -49,6 +51,7 @@ const loadNavBar = () => {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+    loadTelegramJS();
     loadBootstrapCSS();
     loadBootstrapJS();
     loadNavBar()

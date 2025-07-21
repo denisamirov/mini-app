@@ -1,0 +1,21 @@
+* {
+    padding: 0px;
+    margin: 0px;
+}
+
+.buy-button {
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    background: var(--tg-theme-button-color, #4CAF50);
+    color: var(--tg-theme-button-text-color, white)
+}
+
+body {
+    background-color: var(--tg-theme-bg-color, rgb(255,255,255)) !important;
+    color: var(--tg-theme-text-color, rgb(0,0,0)) !important;
+}
+
+h1, h2, h3, p {
+    color: var(--tg-theme-text-color, rgb(0,0,0))
+}

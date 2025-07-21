@@ -30,13 +30,13 @@
 }
 
 .product-card__description {
-    color: #666;
+    color: var(--tg-theme-hint-color, #666);
     line-height: 1.5;
     margin: 0;
 }
 
 .product-card__amount {
-    color: #4CAF50;
+    color: var(--tg-theme-link-color, #4CAF50);
     font-weight: 500;
 }
 
@@ -53,12 +53,4 @@
     font-size: 1.8rem;
     font-weight: 700;
     margin: 0;
-}
-
-.buy-button {
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    background: #4CAF50;
-    color: white
 }
