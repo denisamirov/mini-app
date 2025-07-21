@@ -53,4 +53,5 @@
     font-size: 1.8rem;
     font-weight: 700;
     margin: 0;
+    color: var(--tg-theme-link-color, #4CAF50);
 }

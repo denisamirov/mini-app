@@ -28,7 +28,7 @@
 }
 
 .card-price {
-    color: green
+    color: var(--tg-theme-link-color, #4CAF50);
 }
 
 .title {
