@@ -19,3 +19,17 @@ body {
 h1, h2, h3, p {
     color: var(--tg-theme-text-color, rgb(0,0,0))
 }
+
+.product-input-amount {
+    max-width: 100px;
+}
+
+.product-input-amount input {
+    padding: 0px;
+}
+
+.product-input-amount button {
+    max-width: 5px;
+    display: flex;
+    justify-content: center;
+}

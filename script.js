@@ -12,7 +12,9 @@ const productTemplate = (product) => `
                     <h2 class="card-price">${product.price}</h2>
                     <p class="card-title">${product.name}</p>
                 </div>
-                <button class="buy-button">Добавить</button>
+                <div class="product-buy-button" btn_product_id=${product.id}>
+                    <button class="buy-button">Добавить</button>
+                </div>
             </div>
         </div>
 `

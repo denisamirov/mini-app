@@ -17,7 +17,7 @@
 .card-content-description {
     display: flex;
     flex-direction: column;
-    width: 100%
+    max-width: 250px;
 }
 
 .card-content {

@@ -18,4 +18,5 @@ else {
     document.querySelector('.product-card__price').textContent = product.price
     document.querySelector('.product-card__image').src = product.image_url
     document.querySelector('.product-card__amount').textContent = product.amount
+    document.querySelector('.product-buy-button').setAttribute("btn_product_id", product.id)
 }

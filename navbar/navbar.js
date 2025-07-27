@@ -20,6 +20,14 @@ const loadBootstrapJS = () => {
     document.body.appendChild(script)
 }
 
+// Инициализация динамического поведения кнопки 
+const initializeBuyButton = () => {
+    const script = document.createElement('script')
+    script.src = '../buy-button/buy-button.js'
+    script.defer = true
+    document.head.appendChild(script)
+}
+
 const loadNavBar = () => {
     const pathToTry = [
         './navbar/navbar.html',
@@ -54,5 +62,9 @@ window.addEventListener('DOMContentLoaded', () => {
     loadTelegramJS();
     loadBootstrapCSS();
     loadBootstrapJS();
-    loadNavBar()
+    loadNavBar();
+})
+
+window.addEventListener('load', () => {
+    initializeBuyButton()
 })
