@@ -20,14 +20,6 @@ const loadBootstrapJS = () => {
     document.body.appendChild(script)
 }
 
-// Инициализация динамического поведения кнопки 
-const initializeBuyButton = () => {
-    const script = document.createElement('script')
-    script.src = '../buy-button/buy-button.js'
-    script.defer = true
-    document.head.appendChild(script)
-}
-
 const loadNavBar = () => {
     const pathToTry = [
         './navbar/navbar.html',
@@ -58,6 +50,39 @@ const loadNavBar = () => {
     attemptFetch()
 }
 
+
+const loadScript = () => {
+    const pathToTry = [
+        './buy-button/buy-button.js',
+        '../buy-button/buy-button.js'
+    ]
+
+    let currentAttempt = 0
+
+    const attemptFetch = () => {
+        fetch(pathToTry[currentAttempt])
+            .then(res => {
+                if (!res.ok) throw new Error('Script not found')
+            })
+            .then(r => {
+                const script = document.createElement('script');
+                script.src = pathToTry[currentAttempt];
+                script.defer = true;
+                document.head.appendChild(script);
+            })
+            .catch(err => {
+                currentAttempt++
+                if (currentAttempt < pathToTry.length) {
+                    attemptFetch()
+                } else {
+                    console.error('All attempts failed', err)
+                }
+            })
+    }
+
+    attemptFetch()
+}
+
 window.addEventListener('DOMContentLoaded', () => {
     loadTelegramJS();
     loadBootstrapCSS();
@@ -66,5 +91,5 @@ window.addEventListener('DOMContentLoaded', () => {
 })
 
 window.addEventListener('load', () => {
-    initializeBuyButton()
+    loadScript()
 })
