@@ -1,6 +1,11 @@
 
 const btnList = document.querySelectorAll('.product-buy-button')
 
+const initData = Telegram.WebApp.initData
+const params = new URLSearchParams(initData)
+const userData = params.get('user');
+const user = JSON.parse(userData);
+
 const getQuantityInputHTML = (btnProductId) => `
     <div class="input-group product-input-amount">
         <button class="btn btn-outline-secondary decrease">-</button>
@@ -43,7 +48,7 @@ btnList.forEach(btn => {
             const input = document.querySelector(`input[btn_product_id="${btnProductId}"]`).value
             if (input && input <= 1)
                 createAndReplaceButton(btnProductId)
-                updateProductsFromStorage(btnProductId, false)
+            updateProductsFromStorage(btnProductId, false)
         }
     })
 })
@@ -61,13 +66,8 @@ const createAndReplaceButton = (btnProductId) => {
 
 
 const updateProductsFromStorage = (id, isAdd) => {
-    const initData = Telegram.WebApp.initData
-    const params = new URLSearchParams(initData)
-    const userData = params.get('user');
-    const user = JSON.parse(userData);
     const productListString = localStorage.getItem(user.id)
-    console.log(userData, 'userData')
-    console.log(productListString, 'productListString')
+
     const productList = productListString ? JSON.parse(productListString) : []
     const product = productList.find(product => product.id == id)
 
