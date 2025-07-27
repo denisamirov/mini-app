@@ -43,6 +43,7 @@ btnList.forEach(btn => {
             const input = document.querySelector(`input[btn_product_id="${btnProductId}"]`).value
             if (input && input <= 1)
                 createAndReplaceButton(btnProductId)
+                updateProductsFromStorage(btnProductId, false)
         }
     })
 })
@@ -61,10 +62,10 @@ const createAndReplaceButton = (btnProductId) => {
 
 const updateProductsFromStorage = (id, isAdd) => {
     const initData = Telegram.WebApp.initData
-    const urlParams = new URLSearchParams(initData)
-    const userId = urlParams.get('id')
+    const params = new URLSearchParams(initData)
+    const userData = params.get('user');
     console.log(userId, 'userId')
-    const productListString = localStorage.getItem(userId)
+    const productListString = localStorage.getItem(userData.id)
     console.log(productListString, 'productListString')
     const productList = productListString ? JSON.parse(productListString) : []
     const product = productList.find(product => product.id == id)
