@@ -79,5 +79,5 @@ const updateProductsFromStorage = (id, isAdd) => {
         product.count -= 1
     }
 
-    localStorage.setItem('user', JSON.stringify(productList));
+    localStorage.setItem(userId, JSON.stringify(productList));
 }
