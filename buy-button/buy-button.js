@@ -82,4 +82,5 @@ const updateProductsFromStorage = (id, isAdd) => {
     }
 
     localStorage.setItem(user.id, JSON.stringify(productList));
+    console.log(user.id, localStorage.getItem(user.id))
 }
