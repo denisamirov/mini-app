@@ -61,8 +61,7 @@ const createAndReplaceButton = (btnProductId) => {
 
 const updateProductsFromStorage = (id, isAdd) => {
     const initData = Telegram.WebApp.initData;
-    const user = initData.get('user');
-    console.log(user)
+    console.log(initData)
     const productListString = localStorage.getItem(user.id)
     const productList = productListString ? JSON.parse(productListString) : []
     const product = productList.find(product => product.id == id)
