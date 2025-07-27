@@ -63,9 +63,9 @@ const updateProductsFromStorage = (id, isAdd) => {
     const initData = Telegram.WebApp.initData
     const urlParams = new URLSearchParams(initData)
     const userId = urlParams.get('user_id')
-
+    console.log(userId, 'userId')
     const productListString = localStorage.getItem(userId)
-
+    console.log(productListString, 'productListString')
     const productList = productListString ? JSON.parse(productListString) : []
     const product = productList.find(product => product.id == id)
 
