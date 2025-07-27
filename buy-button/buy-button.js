@@ -46,9 +46,12 @@ btnList.forEach(btn => {
         }
         else {
             const input = document.querySelector(`input[btn_product_id="${btnProductId}"]`).value
-            if (input && input <= 1)
+            if (input && input <= 1) {
                 createAndReplaceButton(btnProductId)
-            updateProductsFromStorage(btnProductId, false)
+                updateProductsFromStorage(btnProductId, false)
+            }
+
+
         }
     })
 })
