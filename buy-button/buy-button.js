@@ -16,6 +16,7 @@ const initializeQuantityControls = (btnProductId) => {
             if (!quantityInput) return
 
             quantityInput.value = parseInt(quantityInput.value) + 1;
+            updateProductsFromStorage(btnProductId, true);
         });
     });
 
@@ -24,6 +25,7 @@ const initializeQuantityControls = (btnProductId) => {
             let quantityInput = button.parentElement.querySelector(`[btn_product_id="${btnProductId}"]`);
             if (quantityInput && quantityInput.value > 1) {
                 quantityInput.value = parseInt(quantityInput.value) - 1;
+                updateProductsFromStorage(btnProductId, false);
             }
         });
     });
@@ -33,12 +35,13 @@ btnList.forEach(btn => {
     btn.addEventListener('click', () => {
         const btnProductId = btn.getAttribute('btn_product_id')
         if (btn.querySelector('.buy-button')) {
+            updateProductsFromStorage(btnProductId, true)
             btn.innerHTML = getQuantityInputHTML(btnProductId)
             initializeQuantityControls(btnProductId)
         }
         else {
             const input = document.querySelector(`input[btn_product_id="${btnProductId}"]`).value
-            if (input && input <= 1) 
+            if (input && input <= 1)
                 createAndReplaceButton(btnProductId)
         }
     })
@@ -46,11 +49,33 @@ btnList.forEach(btn => {
 
 const createAndReplaceButton = (btnProductId) => {
     const btn = document.createElement('button')
-        btn.setAttribute('btn_product_id', btnProductId)
-        btn.classList.add('buy-button')
-        btn.textContent = 'Добавить'
+    btn.setAttribute('btn_product_id', btnProductId)
+    btn.classList.add('buy-button')
+    btn.textContent = 'Добавить'
 
     document.querySelector(`[btn_product_id="${btnProductId}"]`)
         .querySelector('.input-group')
         .replaceWith(btn)
+}
+
+
+const updateProductsFromStorage = (id, isAdd) => {
+    const initData = Telegram.WebApp.initData;
+    const user = initData.get('user');
+    console.log(user)
+    const productListString = localStorage.getItem(user.id)
+    const productList = productListString ? JSON.parse(productListString) : []
+    const product = productList.find(product => product.id == id)
+
+    if (!product) {
+        productList.push({id, count: 1})
+    }
+    else if (isAdd) {
+        product.count += 1
+    }
+    else if (!isAdd) {
+        product.count -= 1
+    }
+
+    localStorage.setItem('user', JSON.stringify(productList));
 }
