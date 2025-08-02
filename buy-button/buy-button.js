@@ -38,7 +38,6 @@ const getUserData = async () => {
     }
     
     // Fallback для обычного браузера или ошибки
-    console.log('Buy-button: Using fallback user ID: 215430');
     return { id: 215430 };
 }
 
@@ -59,8 +58,8 @@ const getUserData = async () => {
                     initializeQuantityControls(user, btnProductId)
                 }
                 else {
-                    const input = document.querySelector(`input[btn_product_id="${btnProductId}"]`).value
-                    if (input && input == 0) {
+                    const input = document.querySelector(`input[btn_product_id="${btnProductId}"]`)
+                    if (input && parseInt(input.value) <= 0) {
                         createAndReplaceButton(btnProductId);
                     } else {
                         initializeQuantityControls(user, btnProductId)
@@ -100,9 +99,23 @@ const getUserData = async () => {
             decreaseBtn.removeEventListener('click', decreaseBtn.decreaseHandler);
             decreaseBtn.decreaseHandler = function () {
                 let quantityInput = this.parentElement.querySelector(`[btn_product_id="${btnProductId}"]`);
-                if (quantityInput && quantityInput.value >= 1) {
-                    quantityInput.value = parseInt(quantityInput.value) - 1;
+                console.log('Decrease button clicked, current value:', quantityInput?.value);
+                
+                if (quantityInput && parseInt(quantityInput.value) >= 1) {
+                    const newValue = parseInt(quantityInput.value) - 1;
+                    quantityInput.value = newValue;
+                    console.log('Decreasing quantity to:', newValue);
                     updateProductsFromStorage(user, btnProductId, false);
+                    
+                    // Если количество стало 0, заменяем на кнопку "Добавить"
+                    if (newValue <= 0) {
+                        console.log('Quantity is 0, creating add button');
+                        setTimeout(() => {
+                            createAndReplaceButton(btnProductId);
+                        }, 100);
+                    }
+                } else {
+                    console.log('Cannot decrease: quantity is already 0 or input not found');
                 }
             };
             decreaseBtn.addEventListener('click', decreaseBtn.decreaseHandler);
@@ -111,14 +124,29 @@ const getUserData = async () => {
 
 
     const createAndReplaceButton = (btnProductId) => {
+        console.log('Creating add button for product:', btnProductId)
         const btn = document.createElement('button')
         btn.setAttribute('btn_product_id', btnProductId)
         btn.classList.add('buy-button')
         btn.textContent = 'Добавить'
 
-        document.querySelector(`[btn_product_id="${btnProductId}"]`)
-            .querySelector('.input-group')
-            .replaceWith(btn)
+        const container = document.querySelector(`[btn_product_id="${btnProductId}"]`)
+        if (container) {
+            container.innerHTML = ''
+            container.appendChild(btn)
+            console.log('Add button created successfully')
+            
+            // Добавляем обработчик для новой кнопки
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation() // Предотвращаем всплытие события
+                console.log('Add button clicked, adding product')
+                updateProductsFromStorage(user, btnProductId, true)
+                container.innerHTML = getQuantityInputHTML(btnProductId)
+                initializeQuantityControls(user, btnProductId)
+            })
+        } else {
+            console.log('Container not found for product:', btnProductId)
+        }
     }
 
 
@@ -131,15 +159,26 @@ const getUserData = async () => {
 
         if (!product) {
             productList.push({ id, count: 1 })
+            console.log('Adding new product with count 1')
         }
         else if (isAdd) {
             product.count += 1
+            console.log('Increasing product count to:', product.count)
         }
         else if (!isAdd) {
             product.count -= 1
+            console.log('Decreasing product count to:', product.count)
+            // Удаляем товар из корзины, если количество стало 0
+            if (product.count <= 0) {
+                const index = productList.findIndex(p => p.id == id);
+                if (index > -1) {
+                    productList.splice(index, 1);
+                    console.log('Removing product from cart (count <= 0)')
+                }
+            }
         }
         localStorage.setItem(user.id, JSON.stringify(productList));
-        console.log(user.id, localStorage.getItem(user.id))
+        console.log('Updated localStorage:', user.id, localStorage.getItem(user.id))
     }
 } // Закрываем функцию initializeBuyButtons
 
