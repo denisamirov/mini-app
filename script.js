@@ -72,6 +72,6 @@ const loadProducts = async () => {
 };
 
 // Запускаем загрузку товаров
-loadProducts().catch(error => {
+await loadProducts().catch(error => {
     console.error('Error loading products:', error);
 });
