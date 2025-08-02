@@ -3,20 +3,28 @@ const getUserData = async () => {
     // Ждем инициализации Telegram WebApp
     if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
         try {
-            // Ждем готовности Telegram WebApp
+            // Ждем готовности Telegram WebApp с таймаутом
             await new Promise((resolve) => {
-                if (Telegram.WebApp.isExpanded !== undefined) {
-                    resolve();
-                } else {
-                    Telegram.WebApp.ready();
-                    setTimeout(resolve, 100);
-                }
+                const checkReady = () => {
+                    if (Telegram.WebApp.isExpanded !== undefined) {
+                        resolve();
+                    } else {
+                        Telegram.WebApp.ready();
+                        setTimeout(checkReady, 50);
+                    }
+                };
+                checkReady();
             });
+            
+            // Дополнительная задержка для полной инициализации
+            await new Promise(resolve => setTimeout(resolve, 200));
             
             if (Telegram.WebApp.initData) {
                 const initData = Telegram.WebApp.initData
                 const params = new URLSearchParams(initData)
                 const userData = params.get('user');
+                console.log('Telegram initData:', initData);
+                console.log('Telegram userData:', userData);
                 return userData ? JSON.parse(userData) : { id: 215430 };
             }
         } catch (error) {
@@ -25,6 +33,7 @@ const getUserData = async () => {
     }
     
     // Fallback для обычного браузера или ошибки
+    console.log('Using fallback user ID: 215430');
     return { id: 215430 };
 }
 
@@ -124,40 +133,49 @@ else {
     document.querySelector('.product-card__amount').textContent = product.amount
     document.querySelector('.product-buy-button').setAttribute("btn_product_id", product.id)
     
-    // Проверяем, есть ли товар в корзине
-    const user = await getUserData();
-    const productListString = localStorage.getItem(user.id);
-    
-    if (productListString) {
-        try {
-            const productList = JSON.parse(productListString);
-            const cartProduct = productList.find(item => item.id == productId);
-            
-            if (cartProduct && cartProduct.count > 0) {
-                // Показываем кнопки с количеством
-                document.querySelector('.product-buy-button').innerHTML = getQuantityInputHTML(productId, cartProduct.count);
-                initializeQuantityControls(productId);
-            }
-        } catch (e) {
-            console.log('Error parsing cart data:', e);
-        }
-    }
-    
-    // Добавляем обработчик для кнопки
-    const buyButton = document.querySelector('.product-buy-button');
-    buyButton.addEventListener('click', () => {
-        if (buyButton.querySelector('.buy-button')) {
-            updateProductsFromStorage(productId, true);
-            buyButton.innerHTML = getQuantityInputHTML(productId);
-            initializeQuantityControls(productId);
-        }
-        else {
-            const input = document.querySelector(`input[btn_product_id="${productId}"]`);
-            if (input && input.value == 0) {
-                createAndReplaceButton(productId);
-            } else {
-                initializeQuantityControls(productId);
+    // Ждем инициализации Telegram и затем проверяем корзину
+    const initializeProductPage = async () => {
+        // Ждем инициализации Telegram
+        const user = await getUserData();
+        console.log('Product page: User initialized:', user);
+        
+        const productListString = localStorage.getItem(user.id);
+        console.log('Product page: localStorage for user', user.id, ':', productListString);
+        
+        if (productListString) {
+            try {
+                const productList = JSON.parse(productListString);
+                const cartProduct = productList.find(item => item.id == productId);
+                
+                if (cartProduct && cartProduct.count > 0) {
+                    // Показываем кнопки с количеством
+                    document.querySelector('.product-buy-button').innerHTML = getQuantityInputHTML(productId, cartProduct.count);
+                    initializeQuantityControls(productId);
+                }
+            } catch (e) {
+                console.log('Error parsing cart data:', e);
             }
         }
-    });
+        
+        // Добавляем обработчик для кнопки
+        const buyButton = document.querySelector('.product-buy-button');
+        buyButton.addEventListener('click', async () => {
+            if (buyButton.querySelector('.buy-button')) {
+                await updateProductsFromStorage(productId, true);
+                buyButton.innerHTML = getQuantityInputHTML(productId);
+                initializeQuantityControls(productId);
+            }
+            else {
+                const input = document.querySelector(`input[btn_product_id="${productId}"]`);
+                if (input && input.value == 0) {
+                    createAndReplaceButton(productId);
+                } else {
+                    initializeQuantityControls(productId);
+                }
+            }
+        });
+    };
+    
+    // Запускаем инициализацию
+    initializeProductPage();
 }

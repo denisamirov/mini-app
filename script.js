@@ -3,20 +3,28 @@ const getUserData = async () => {
     // Ждем инициализации Telegram WebApp
     if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
         try {
-            // Ждем готовности Telegram WebApp
+            // Ждем готовности Telegram WebApp с таймаутом
             await new Promise((resolve) => {
-                if (Telegram.WebApp.isExpanded !== undefined) {
-                    resolve();
-                } else {
-                    Telegram.WebApp.ready();
-                    setTimeout(resolve, 100);
-                }
+                const checkReady = () => {
+                    if (Telegram.WebApp.isExpanded !== undefined) {
+                        resolve();
+                    } else {
+                        Telegram.WebApp.ready();
+                        setTimeout(checkReady, 50);
+                    }
+                };
+                checkReady();
             });
+            
+            // Дополнительная задержка для полной инициализации
+            await new Promise(resolve => setTimeout(resolve, 200));
             
             if (Telegram.WebApp.initData) {
                 const initData = Telegram.WebApp.initData
                 const params = new URLSearchParams(initData)
                 const userData = params.get('user');
+                console.log('Main page: Telegram initData:', initData);
+                console.log('Main page: Telegram userData:', userData);
                 return userData ? JSON.parse(userData) : { id: 215430 };
             }
         } catch (error) {
@@ -25,6 +33,7 @@ const getUserData = async () => {
     }
     
     // Fallback для обычного браузера или ошибки
+    console.log('Main page: Using fallback user ID: 215430');
     return { id: 215430 };
 }
 
@@ -84,6 +93,9 @@ const goods = await response.json()
 
 // Асинхронная функция для загрузки товаров
 const loadProducts = async () => {
+    // Ждем инициализации Telegram перед загрузкой товаров
+    console.log('Main page: Starting product loading...');
+    
     for (const product of goods) {
         const template = await productTemplate(product);
         container.insertAdjacentHTML('beforeend', template);
@@ -91,6 +103,10 @@ const loadProducts = async () => {
     
     // Загружаем buy-button.js после загрузки товаров
     await import('./buy-button/buy-button.js');
+    console.log('Main page: Products loaded successfully');
 };
 
-await loadProducts()
+// Запускаем загрузку товаров
+loadProducts().catch(error => {
+    console.error('Error loading products:', error);
+});
