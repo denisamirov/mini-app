@@ -1,4 +1,16 @@
-const getQuantityInputHTML = (btnProductId, count) => `
+// Функция для получения ID пользователя
+const getUserData = () => {
+    if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.initData) {
+        const initData = Telegram.WebApp.initData
+        const params = new URLSearchParams(initData)
+        const userData = params.get('user');
+        return userData ? JSON.parse(userData) : { id: 215430 };
+    } else {
+        return { id: 215430 };
+    }
+}
+
+export const getQuantityInputHTML = (btnProductId, count) => `
     <div class="input-group product-input-amount">
         <button class="btn btn-outline-secondary decrease">-</button>
         <input type="number" class="form-control text-center quantity" value="${count}" min="1" btn_product_id=${btnProductId} readonly>
@@ -22,7 +34,8 @@ const productTemplate = (product) => `
                 </div>
                 <div class="product-buy-button" btn_product_id=${product.id}>
                 ${(() => {
-                    const userData = localStorage.getItem(215430);
+                    const user = getUserData();
+                    const userData = localStorage.getItem(user.id);
                     if (!userData) return `<button class="buy-button">Добавить</button>`;
                     try {
                         const products = JSON.parse(userData);
@@ -50,5 +63,7 @@ goods.forEach(product => {
     container.insertAdjacentHTML('beforeend', productTemplate(product))
 });
 
-const user = localStorage.getItem(215430)
-console.log(user)
+const user = getUserData();
+const userData = localStorage.getItem(user.id);
+console.log('User ID:', user.id);
+console.log('User data:', userData);
