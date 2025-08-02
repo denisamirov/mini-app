@@ -1,5 +1,7 @@
 
-const btnList = document.querySelectorAll('.product-buy-button')
+// Функция инициализации кнопок
+const initializeBuyButtons = () => {
+    const btnList = document.querySelectorAll('.product-buy-button')
 
 // Функция для получения ID пользователя с ожиданием Telegram
 const getUserData = async () => {
@@ -38,6 +40,7 @@ let user = { id: 215430 };
 getUserData().then(userData => {
     user = userData;
     console.log('User initialized:', user);
+    console.log(localStorage.getItem(user.id))
 });
 
 const getQuantityInputHTML = (btnProductId) => `
@@ -132,3 +135,10 @@ const updateProductsFromStorage = (id, isAdd) => {
     localStorage.setItem(user.id, JSON.stringify(productList));
     console.log(user.id, localStorage.getItem(user.id))
 }
+} // Закрываем функцию initializeBuyButtons
+
+// Вызываем инициализацию
+initializeBuyButtons();
+
+// Экспортируем функцию для использования в других модулях
+export { initializeBuyButtons };

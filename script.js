@@ -92,6 +92,12 @@ const loadProducts = async () => {
     const userData = localStorage.getItem(user.id);
     console.log('User ID:', user.id);
     console.log('User data:', userData);
+    
+    // Загружаем buy-button.js после загрузки товаров
+    await import('./buy-button/buy-button.js');
 };
 
-loadProducts();
+// Запускаем загрузку товаров
+loadProducts().catch(error => {
+    console.error('Ошибка загрузки товаров:', error);
+});
