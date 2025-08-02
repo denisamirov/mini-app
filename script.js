@@ -43,6 +43,7 @@ container.innerHTML = ''
 const productTemplate = async (product) => {
     const user = await getUserData();
     const userData = localStorage.getItem(user.id);
+    console.log(user, userData, 'Подгрузка из локального хранилища')
     let buttonHTML = `<button class="buy-button">Добавить</button>`;
     
     if (userData) {
@@ -88,16 +89,8 @@ const loadProducts = async () => {
         container.insertAdjacentHTML('beforeend', template);
     }
     
-    const user = await getUserData();
-    const userData = localStorage.getItem(user.id);
-    console.log('User ID:', user.id);
-    console.log('User data:', userData);
-    
     // Загружаем buy-button.js после загрузки товаров
     await import('./buy-button/buy-button.js');
 };
 
-// Запускаем загрузку товаров
-loadProducts().catch(error => {
-    console.error('Ошибка загрузки товаров:', error);
-});
+await loadProducts()
