@@ -258,7 +258,7 @@ _Заказ создан через Mini App_`;
         const encodedText = encodeURIComponent(orderText);
         
         // Получаем username продавца из localStorage или используем test_seller
-        const telegramUsername = localStorage.getItem('seller_username') || 'KZN_Alina_Garifullina';
+        const telegramUsername = localStorage.getItem('seller_username') || 'test_seller';
         const telegramLink = `https://t.me/${telegramUsername}?text=${encodedText}`;
         
         return telegramLink;
