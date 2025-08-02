@@ -224,6 +224,7 @@ const createTelegramOrderLink = async (cartItems, user) => {
         
         for (const cartItem of cartItems) {
             const productInfo = await getProductInfo(cartItem.id);
+            
             if (productInfo) {
                 const itemTotal = parseFloat(productInfo.price.replace(',', '.')) * cartItem.count;
                 totalSum += itemTotal;
@@ -256,8 +257,8 @@ _Заказ создан через Mini App_`;
         // Кодируем текст для URL
         const encodedText = encodeURIComponent(orderText);
         
-        // Получаем username продавца из localStorage или используем fallback
-        const telegramUsername = localStorage.getItem('seller_username') || 'your_username';
+        // Получаем username продавца из localStorage или используем test_seller
+        const telegramUsername = localStorage.getItem('seller_username') || 'KZN_Alina_Garifullina';
         const telegramLink = `https://t.me/${telegramUsername}?text=${encodedText}`;
         
         return telegramLink;
@@ -362,6 +363,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (checkoutButton) {
         checkoutButton.addEventListener('click', async () => {
             const cartItems = await getCartItems()
+            
             if (cartItems.length === 0) {
                 alert('Корзина пуста!')
                 return
@@ -381,22 +383,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                     // В Telegram Mini App используем встроенный метод
                     try {
                         Telegram.WebApp.openTelegramLink(telegramLink);
-                        console.log('Открываем Telegram ссылку через WebApp API');
                     } catch (error) {
-                        console.log('Ошибка открытия через WebApp API, используем window.open');
-                        window.open(telegramLink, '_blank');
+                        window.location.href = telegramLink;
                     }
                 } else {
-                    // В обычном браузере открываем в новой вкладке
-                    window.open(telegramLink, '_blank');
+                    // В обычном браузере перенаправляем на страницу
+                    window.location.href = telegramLink;
                 }
-                
-                // Показываем подтверждение
-                alert('Заказ отправлен! Откроется чат с продавцом.')
                 
                 // Очищаем корзину после отправки заказа
                 localStorage.removeItem(user.id)
-                await updateCartDisplay()
             } else {
                 alert('Ошибка при создании заказа. Попробуйте еще раз.')
             }
