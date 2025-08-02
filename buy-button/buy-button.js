@@ -14,34 +14,42 @@ const getQuantityInputHTML = (btnProductId) => `
     </div>`
 
 const initializeQuantityControls = (btnProductId) => {
-    // Удаляем старые обработчики перед добавлением новых
-    document.querySelectorAll('.increase').forEach(button => {
-        button.removeEventListener('click', button.increaseHandler);
-        button.increaseHandler = function () {
-            let quantityInput = button.parentElement.querySelector(`[btn_product_id="${btnProductId}"]`);
-            if (!quantityInput) return
+
+    const productContainer = document.querySelector(`[btn_product_id="${btnProductId}"]`);
+    if (!productContainer) return;
+    
+    const increaseBtn = productContainer.querySelector('.increase');
+    const decreaseBtn = productContainer.querySelector('.decrease');
+    
+    if (increaseBtn) {
+        increaseBtn.removeEventListener('click', increaseBtn.increaseHandler);
+        increaseBtn.increaseHandler = function () {
+            let quantityInput = this.parentElement.querySelector(`[btn_product_id="${btnProductId}"]`);
+            if (!quantityInput) return;
             quantityInput.value = parseInt(quantityInput.value) + 1;
             updateProductsFromStorage(btnProductId, true);
         };
-        button.addEventListener('click', button.increaseHandler);
-    });
+        increaseBtn.addEventListener('click', increaseBtn.increaseHandler);
+    }
 
-    document.querySelectorAll('.decrease').forEach(button => {
-        button.removeEventListener('click', button.decreaseHandler);
-        button.decreaseHandler = function () {
-            let quantityInput = button.parentElement.querySelector(`[btn_product_id="${btnProductId}"]`);
+    if (decreaseBtn) {
+        decreaseBtn.removeEventListener('click', decreaseBtn.decreaseHandler);
+        decreaseBtn.decreaseHandler = function () {
+            let quantityInput = this.parentElement.querySelector(`[btn_product_id="${btnProductId}"]`);
             if (quantityInput && quantityInput.value >= 1) {
                 quantityInput.value = parseInt(quantityInput.value) - 1;
                 updateProductsFromStorage(btnProductId, false);
             }
         };
-        button.addEventListener('click', button.decreaseHandler);
-    });
+        decreaseBtn.addEventListener('click', decreaseBtn.decreaseHandler);
+    }
 }
 
 btnList.forEach(btn => {
+    const btnProductId = btn.getAttribute('btn_product_id');
+    initializeQuantityControls(btnProductId);
+    
     btn.addEventListener('click', () => {
-        const btnProductId = btn.getAttribute('btn_product_id')
         if (btn.querySelector('.buy-button')) {
             updateProductsFromStorage(btnProductId, true)
             btn.innerHTML = getQuantityInputHTML(btnProductId)
@@ -50,7 +58,7 @@ btnList.forEach(btn => {
         else {
             const input = document.querySelector(`input[btn_product_id="${btnProductId}"]`).value
             if (input && input == 0) {
-                createAndReplaceButton(btnProductId)
+                createAndReplaceButton(btnProductId);
             } else {
                 initializeQuantityControls(btnProductId)
             }
@@ -74,6 +82,7 @@ const updateProductsFromStorage = (id, isAdd) => {
     const productListString = localStorage.getItem(user.id)
 
     const productList = productListString ? JSON.parse(productListString) : []
+
     const product = productList.find(product => product.id == id)
 
     if (!product) {

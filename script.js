@@ -27,7 +27,10 @@ const productTemplate = (product) => `
                     try {
                         const products = JSON.parse(userData);
                         const p = products.find(item => item.id === product.id);
-                        return p ? getQuantityInputHTML(p.id, p.count) : `<button class="buy-button">Добавить</button>`;
+                        if (p && p.count > 0) 
+                            return getQuantityInputHTML(p.id, p.count)
+                        else 
+                            return `<button class="buy-button">Добавить</button>`;
                     } catch (e) {
                         return `<button class="buy-button">Добавить</button>`;
                     }
