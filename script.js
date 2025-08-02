@@ -24,11 +24,14 @@ const productTemplate = (product) => `
                 ${(() => {
                     const userData = localStorage.getItem(215430);
                     if (!userData) return `<button class="buy-button">Добавить</button>`;
-                    const products = JSON.parse(userData);
-                    const p = products.find(item => item.id === product.id)
-                    return p ? getQuantityInputHTML(p.id, p.count) :
-                `<button class="buy-button">Добавить</button>`;
-    })()}
+                    try {
+                        const products = JSON.parse(userData);
+                        const p = products.find(item => item.id === product.id);
+                        return p ? getQuantityInputHTML(p.id, p.count) : `<button class="buy-button">Добавить</button>`;
+                    } catch (e) {
+                        return `<button class="buy-button">Добавить</button>`;
+                    }
+                })()}
                 </div>
             </div>
         </div>

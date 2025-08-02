@@ -14,25 +14,28 @@ const getQuantityInputHTML = (btnProductId) => `
     </div>`
 
 const initializeQuantityControls = (btnProductId) => {
+    // Удаляем старые обработчики перед добавлением новых
     document.querySelectorAll('.increase').forEach(button => {
-        button.addEventListener('click', function () {
+        button.removeEventListener('click', button.increaseHandler);
+        button.increaseHandler = function () {
             let quantityInput = button.parentElement.querySelector(`[btn_product_id="${btnProductId}"]`);
-
             if (!quantityInput) return
-
             quantityInput.value = parseInt(quantityInput.value) + 1;
             updateProductsFromStorage(btnProductId, true);
-        });
+        };
+        button.addEventListener('click', button.increaseHandler);
     });
 
     document.querySelectorAll('.decrease').forEach(button => {
-        button.addEventListener('click', function () {
+        button.removeEventListener('click', button.decreaseHandler);
+        button.decreaseHandler = function () {
             let quantityInput = button.parentElement.querySelector(`[btn_product_id="${btnProductId}"]`);
             if (quantityInput && quantityInput.value >= 1) {
                 quantityInput.value = parseInt(quantityInput.value) - 1;
                 updateProductsFromStorage(btnProductId, false);
             }
-        });
+        };
+        button.addEventListener('click', button.decreaseHandler);
     });
 }
 
