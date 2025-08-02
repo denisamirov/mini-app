@@ -4,7 +4,7 @@ const btnList = document.querySelectorAll('.product-buy-button')
 const initData = Telegram.WebApp.initData
 const params = new URLSearchParams(initData)
 const userData = params.get('user');
-const user = JSON.parse(userData);
+const user = userData ? JSON.parse(userData) : { id: Math.floor(Math.random() * 1000000) };
 
 const getQuantityInputHTML = (btnProductId) => `
     <div class="input-group product-input-amount">
@@ -28,7 +28,7 @@ const initializeQuantityControls = (btnProductId) => {
     document.querySelectorAll('.decrease').forEach(button => {
         button.addEventListener('click', function () {
             let quantityInput = button.parentElement.querySelector(`[btn_product_id="${btnProductId}"]`);
-            if (quantityInput && quantityInput.value > 1) {
+            if (quantityInput && quantityInput.value >= 1) {
                 quantityInput.value = parseInt(quantityInput.value) - 1;
                 updateProductsFromStorage(btnProductId, false);
             }
@@ -46,9 +46,8 @@ btnList.forEach(btn => {
         }
         else {
             const input = document.querySelector(`input[btn_product_id="${btnProductId}"]`).value
-            if (input && input <= 1) {
+            if (input && input == 0) {
                 createAndReplaceButton(btnProductId)
-                updateProductsFromStorage(btnProductId, false)
             }
 
 
