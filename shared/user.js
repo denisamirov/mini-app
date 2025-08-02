@@ -86,17 +86,17 @@ export const getUserData = async () => {
     const tgWebAppData = urlParams.get('tgWebAppData');
     const userData = urlParams.get('user');
     
-    // if (tgWebAppData || userData || window.parent?.Telegram?.WebApp || window.opener?.Telegram?.WebApp) {
-    //     console.log('Telegram Mini App detected via URL parameters or parent window');
-    //     if (userData) {
-    //         try {
-    //             const parsedUserData = JSON.parse(userData);
-    //             console.log('Parsed user data from URL:', parsedUserData);
-    //             return parsedUserData;
-    //         } catch (parseError) {
-    //             console.log('Error parsing userData from URL:', parseError);
-    //         }
-    //     }
+    if (tgWebAppData || userData) {
+        console.log('Telegram Mini App detected via URL parameters or parent window');
+        if (userData) {
+            try {
+                const parsedUserData = JSON.parse(userData);
+                console.log('Parsed user data from URL:', parsedUserData);
+                return parsedUserData;
+            } catch (parseError) {
+                console.log('Error parsing userData from URL:', parseError);
+            }
+        }
         
         // Пробуем получить данные из parent window
         if (window.parent?.Telegram?.WebApp?.initData) {
