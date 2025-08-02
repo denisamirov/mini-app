@@ -60,6 +60,14 @@ const loadProducts = async () => {
     // Ждем инициализации Telegram перед загрузкой товаров
     console.log('Main page: Starting product loading...');
     
+    // Дополнительная задержка для Telegram Mini App
+    const telegramExists = typeof Telegram !== 'undefined' && Telegram && Telegram.WebApp;
+    if (telegramExists) {
+        console.log('Main page: Telegram Mini App detected, waiting for initialization...');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log('Main page: Telegram Mini App initialization delay completed');
+    }
+    
     for (const product of goods) {
         const template = await productTemplate(product);
         container.insertAdjacentHTML('beforeend', template);
