@@ -3,11 +3,27 @@ import { getUserData } from '../shared/user.js';
 
 // Функция для получения товаров из localStorage
 const getCartItems = async () => {
+    console.log('Cart: Getting user data...')
     const user = await getUserData()
     console.log('Cart: User ID:', user.id)
     
+    // Дополнительная проверка для Telegram Mini App
+    if (typeof Telegram !== 'undefined' && Telegram.WebApp && user.id === 215430) {
+        console.log('Cart: Telegram Mini App detected but using fallback user ID, waiting...')
+        await new Promise(resolve => setTimeout(resolve, 500))
+        
+        // Попробуем получить пользователя еще раз
+        const retryUser = await getUserData()
+        console.log('Cart: Retry User ID:', retryUser.id)
+        
+        if (retryUser.id !== 215430) {
+            console.log('Cart: Successfully got real user ID on retry')
+            user.id = retryUser.id
+        }
+    }
+    
     const productListString = localStorage.getItem(user.id)
-    console.log('Cart: localStorage data:', productListString)
+    console.log('Cart: localStorage data for user', user.id, ':', productListString)
     
     if (!productListString) {
         console.log('Cart: No data in localStorage')
@@ -279,7 +295,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Дополнительная задержка для Telegram Mini App
     if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
-        await new Promise(resolve => setTimeout(resolve, 500))
+        console.log('Telegram Mini App detected, waiting for initialization...')
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        console.log('Telegram Mini App initialization delay completed')
     }
     
     await updateCartDisplay()
