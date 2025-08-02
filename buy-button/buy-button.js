@@ -33,12 +33,9 @@ const getUserData = async () => {
     return { id: 215430 };
 }
 
-// Инициализация пользователя
-let user = { id: 215430 };
-
 // Ждем инициализации Telegram
 getUserData().then(userData => {
-    user = userData;
+    const user = userData;
     console.log('User initialized:', user);
     console.log(localStorage.getItem(user.id))
 });
@@ -139,6 +136,3 @@ const updateProductsFromStorage = (id, isAdd) => {
 
 // Вызываем инициализацию
 initializeBuyButtons();
-
-// Экспортируем функцию для использования в других модулях
-export { initializeBuyButtons };
