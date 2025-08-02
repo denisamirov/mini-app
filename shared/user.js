@@ -1,13 +1,15 @@
 // Универсальная функция для получения ID пользователя с ожиданием Telegram
 export const getUserData = async () => {
     console.log('getUserData called');
+    
+    // Безопасная проверка существования Telegram
+    const telegramExists = typeof Telegram !== 'undefined' && Telegram;
     console.log('typeof Telegram:', typeof Telegram);
-    console.log('Telegram object:', Telegram);
+    console.log('Telegram object:', telegramExists ? 'exists' : 'undefined');
     
     // Проверяем различные способы определения Telegram Mini App
     const isTelegramWebApp = 
-        typeof Telegram !== 'undefined' && 
-        Telegram && 
+        telegramExists && 
         Telegram.WebApp &&
         (window.Telegram || window.telegram || Telegram.WebApp.initData || Telegram.WebApp.isExpanded !== undefined) ||
         window.parent?.Telegram?.WebApp ||
@@ -18,7 +20,7 @@ export const getUserData = async () => {
     
     console.log('isTelegramWebApp:', isTelegramWebApp);
     
-    if (isTelegramWebApp) {
+    if (isTelegramWebApp && telegramExists) {
         try {
             console.log('Telegram WebApp detected, waiting for initialization...');
             console.log('Telegram.WebApp:', Telegram.WebApp);

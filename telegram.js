@@ -3,12 +3,18 @@ export const loadTelegramJS = () => {
     script.src = "https://telegram.org/js/telegram-web-app.js"
     document.head.insertBefore(script, document.head.firstChild)
     script.onload = init
+    script.onerror = () => {
+        console.log('Failed to load Telegram WebApp library from CDN');
+    }
 }
 
 const init = () => {
     const tg = window.Telegram?.WebApp;
     console.log('The TelegramJS was uploaded successfully')
-    if (!tg) throw new Error('The TelegramJS was not uploaded')
+    if (!tg) {
+        console.log('The TelegramJS was not uploaded, but continuing...');
+        return;
+    }
 
     const root = document.documentElement
 

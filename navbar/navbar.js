@@ -20,6 +20,28 @@ const loadBootstrapJS = () => {
     document.body.appendChild(script)
 }
 
+// Безопасная загрузка Telegram JS
+const loadTelegramJSSafe = () => {
+    // Проверяем, находимся ли мы в Telegram Mini App
+    const isTelegramWebApp = 
+        window.location.href.includes('tgWebAppData') ||
+        window.location.href.includes('telegram') ||
+        window.location.href.includes('t.me') ||
+        window.parent?.Telegram?.WebApp ||
+        window.opener?.Telegram?.WebApp;
+    
+    if (isTelegramWebApp) {
+        console.log('Telegram Mini App detected, loading Telegram JS...');
+        try {
+            loadTelegramJS();
+        } catch (error) {
+            console.log('Failed to load Telegram JS:', error);
+        }
+    } else {
+        console.log('Not in Telegram Mini App, skipping Telegram JS load');
+    }
+}
+
 const loadNavBar = () => {
     const pathToTry = [
         './navbar/navbar.html',
@@ -84,7 +106,7 @@ const loadScript = () => {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    loadTelegramJS();
+    loadTelegramJSSafe();
     loadBootstrapCSS();
     loadBootstrapJS();
     loadNavBar();

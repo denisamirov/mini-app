@@ -8,7 +8,8 @@ const getCartItems = async () => {
     console.log('Cart: User ID:', user.id)
     
     // Дополнительная проверка для Telegram Mini App
-    if (typeof Telegram !== 'undefined' && Telegram.WebApp && user.id === 215430) {
+    const telegramExists = typeof Telegram !== 'undefined' && Telegram && Telegram.WebApp;
+    if (telegramExists && user.id === 215430) {
         console.log('Cart: Telegram Mini App detected but using fallback user ID, waiting...')
         await new Promise(resolve => setTimeout(resolve, 500))
         
@@ -294,7 +295,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('Загружаем корзину...')
     
     // Дополнительная задержка для Telegram Mini App
-    if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+    const telegramExists = typeof Telegram !== 'undefined' && Telegram && Telegram.WebApp;
+    if (telegramExists) {
         console.log('Telegram Mini App detected, waiting for initialization...')
         await new Promise(resolve => setTimeout(resolve, 1000))
         console.log('Telegram Mini App initialization delay completed')
