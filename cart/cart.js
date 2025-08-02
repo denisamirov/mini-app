@@ -393,6 +393,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 // Очищаем корзину после отправки заказа
                 localStorage.removeItem(user.id)
+                await updateCartDisplay()
             } else {
                 alert('Ошибка при создании заказа. Попробуйте еще раз.')
             }
