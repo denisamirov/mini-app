@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Корзина</title>
+    <link rel="stylesheet" href="cart.css">
+    <script type="module" src="cart.js"></script>
+    <script type="module" src="../navbar/navbar.js"></script>
+    <script type="module" src="../buy-button/buy-button.js"></script>
+    <link rel="stylesheet" href="../base.css">
+</head>
+
+<body>
+    <div class="cart-container">
+        <h1 class="cart-title">Корзина</h1>
+        
+        <div class="cart-items" id="cart-items">
+            <!-- Товары будут добавлены динамически -->
+        </div>
+        
+        <div class="cart-summary">
+            <div class="cart-total">
+                <span class="total-label">Итого:</span>
+                <span class="total-price" id="total-price">0 ₽</span>
+            </div>
+            <button class="checkout-button" id="checkout-button">Оформить заказ</button>
+        </div>
+        
+        <div class="empty-cart" id="empty-cart" style="display: none;">
+            <p>Ваша корзина пуста</p>
+            <a href="../index.html" class="continue-shopping">Продолжить покупки</a>
+        </div>
+    </div>
+</body>
+
+</html> 
