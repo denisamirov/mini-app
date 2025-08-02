@@ -4,11 +4,20 @@ import { getUserData } from '../shared/user.js';
 // Функция для получения товаров из localStorage
 const getCartItems = async () => {
     const user = await getUserData()
+    console.log('Cart: User ID:', user.id)
+    
     const productListString = localStorage.getItem(user.id)
-    if (!productListString) return []
+    console.log('Cart: localStorage data:', productListString)
+    
+    if (!productListString) {
+        console.log('Cart: No data in localStorage')
+        return []
+    }
     
     try {
-        return JSON.parse(productListString)
+        const items = JSON.parse(productListString)
+        console.log('Cart: Parsed items:', items)
+        return items
     } catch (e) {
         console.log('Error parsing cart items:', e)
         return []
@@ -101,7 +110,7 @@ const createCartItemHTML = (product, quantity) => {
 
 // Функция для обновления отображения корзины
 const updateCartDisplay = async () => {
-    const cartItems = getCartItems()
+    const cartItems = await getCartItems()
     const cartItemsContainer = document.getElementById('cart-items')
     const emptyCartDiv = document.getElementById('empty-cart')
     const cartSummaryDiv = document.querySelector('.cart-summary')
@@ -121,79 +130,179 @@ const updateCartDisplay = async () => {
     // Очищаем контейнер
     cartItemsContainer.innerHTML = ''
     
-    let totalSum = 0
-    
     // Добавляем каждый товар
-    for (const cartItem of await cartItems) {
+    for (const cartItem of cartItems) {
         const productInfo = await getProductInfo(cartItem.id)
         if (productInfo) {
             const itemHTML = createCartItemHTML(productInfo, cartItem.count)
             cartItemsContainer.insertAdjacentHTML('beforeend', itemHTML)
             
-            // Добавляем к общей сумме
-            const itemPrice = parseFloat(productInfo.price.replace(',', '.'))
-            totalSum += itemPrice * cartItem.count
+            // Добавляем обработчики к последнему добавленному элементу
+            const lastElement = cartItemsContainer.lastElementChild
+            if (lastElement) {
+                console.log('Adding event listeners to cart item:', cartItem.id)
+                addEventListenersToElement(lastElement)
+            } else {
+                console.log('Failed to find last element for product:', cartItem.id)
+            }
         }
     }
     
     // Обновляем общую сумму
-    document.getElementById('total-price').textContent = `${totalSum.toFixed(2)} ₽`
-    
-    // Добавляем обработчики событий
-    addEventListeners()
+    await updateTotalSum()
 }
 
-// Функция для добавления обработчиков событий
-const addEventListeners = () => {
-    // Обработчики для кнопок увеличения количества
-    document.querySelectorAll('.increase-btn').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            const productId = e.target.dataset.productId
-            updateProductsFromStorage(productId, true)
-            await updateCartDisplay()
-        })
-    })
+
+// Функция для быстрого обновления общей суммы
+const updateTotalSum = async () => {
+    const cartItems = await getCartItems()
+    let totalSum = 0
     
-    // Обработчики для кнопок уменьшения количества
-    document.querySelectorAll('.decrease-btn').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            const productId = e.target.dataset.productId
-            updateProductsFromStorage(productId, false)
-            await updateCartDisplay()
-        })
-    })
-    
-    // Обработчики для кнопок удаления
-    document.querySelectorAll('.remove-item').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            const productId = e.target.dataset.productId
-            removeFromCart(productId)
-            await updateCartDisplay()
-        })
-    })
-    
-    // Обработчик для кнопки оформления заказа
-    const checkoutButton = document.getElementById('checkout-button')
-    checkoutButton.addEventListener('click', async () => {
-        const cartItems = await getCartItems()
-        if (cartItems.length === 0) {
-            alert('Корзина пуста!')
-            return
+    // Используем кэшированные цены из DOM для быстрого расчета
+    for (const cartItem of cartItems) {
+        const cartItemElement = document.querySelector(`[data-product-id="${cartItem.id}"]`)
+        if (cartItemElement) {
+            const priceElement = cartItemElement.querySelector('.cart-item-price')
+            if (priceElement) {
+                const price = parseFloat(priceElement.textContent.replace(' ₽', '').replace(',', '.'))
+                totalSum += price * cartItem.count
+            }
         }
-        
-        // Здесь можно добавить логику оформления заказа
-        alert('Заказ оформлен! Спасибо за покупку!')
-        
-        // Очищаем корзину после оформления заказа
-        const user = await getUserData()
-        localStorage.removeItem(user.id)
-        updateCartDisplay()
-    })
+    }
+    
+    const totalPriceElement = document.getElementById('total-price')
+    if (totalPriceElement) {
+        totalPriceElement.textContent = `${totalSum.toFixed(2)} ₽`
+    }
 }
+
+// Функция для мгновенного обновления общей суммы
+const updateTotalSumInstant = () => {
+    let totalSum = 0
+    
+    // Используем текущие значения из DOM
+    document.querySelectorAll('.cart-item').forEach(cartItemElement => {
+        const priceElement = cartItemElement.querySelector('.cart-item-price')
+        const quantityInput = cartItemElement.querySelector('.quantity-input')
+        
+        if (priceElement && quantityInput) {
+            const price = parseFloat(priceElement.textContent.replace(' ₽', '').replace(',', '.'))
+            const quantity = parseInt(quantityInput.value) || 0
+            totalSum += price * quantity
+        }
+    })
+    
+    const totalPriceElement = document.getElementById('total-price')
+    if (totalPriceElement) {
+        totalPriceElement.textContent = `${totalSum.toFixed(2)} ₽`
+    }
+}
+
+// Функция для добавления обработчиков к конкретному элементу
+const addEventListenersToElement = (element) => {
+    console.log('Adding event listeners to element:', element)
+    
+    // Обработчик для кнопки увеличения количества
+    const increaseBtn = element.querySelector('.increase-btn')
+    if (increaseBtn && !increaseBtn.hasAttribute('data-listener-added')) {
+        console.log('Adding increase button listener for product:', increaseBtn.dataset.productId)
+        increaseBtn.setAttribute('data-listener-added', 'true')
+        increaseBtn.addEventListener('click', async (e) => {
+            e.preventDefault()
+            console.log('Increase button clicked for product:', e.target.dataset.productId)
+            const productId = e.target.dataset.productId
+            
+            // Мгновенно обновляем UI
+            const quantityInput = element.querySelector('.quantity-input')
+            if (quantityInput) {
+                quantityInput.value = parseInt(quantityInput.value) + 1
+            }
+            
+            // Мгновенно обновляем общую сумму
+            updateTotalSumInstant()
+            
+            // Обновляем localStorage в фоне
+            updateProductsFromStorage(productId, true)
+        })
+    }
+    
+    // Обработчик для кнопки уменьшения количества
+    const decreaseBtn = element.querySelector('.decrease-btn')
+    if (decreaseBtn && !decreaseBtn.hasAttribute('data-listener-added')) {
+        console.log('Adding decrease button listener for product:', decreaseBtn.dataset.productId)
+        decreaseBtn.setAttribute('data-listener-added', 'true')
+        decreaseBtn.addEventListener('click', async (e) => {
+            e.preventDefault()
+            console.log('Decrease button clicked for product:', e.target.dataset.productId)
+            const productId = e.target.dataset.productId
+            
+            const quantityInput = element.querySelector('.quantity-input')
+            if (quantityInput && parseInt(quantityInput.value) > 1) {
+                // Мгновенно обновляем UI
+                quantityInput.value = parseInt(quantityInput.value) - 1
+                
+                // Мгновенно обновляем общую сумму
+                updateTotalSumInstant()
+                
+                // Обновляем localStorage в фоне
+                updateProductsFromStorage(productId, false)
+            } else if (quantityInput && parseInt(quantityInput.value) === 1) {
+                // Удаляем товар
+                removeFromCart(productId).then(() => {
+                    updateCartDisplay()
+                })
+            }
+        })
+    }
+    
+    // Обработчик для кнопки удаления
+    const removeBtn = element.querySelector('.remove-item')
+    if (removeBtn && !removeBtn.hasAttribute('data-listener-added')) {
+        console.log('Adding remove button listener for product:', removeBtn.dataset.productId)
+        removeBtn.setAttribute('data-listener-added', 'true')
+        removeBtn.addEventListener('click', async (e) => {
+            e.preventDefault()
+            console.log('Remove button clicked for product:', e.target.dataset.productId)
+            const productId = e.target.dataset.productId
+            await removeFromCart(productId)
+            await updateCartDisplay()
+        })
+    }
+}
+
+
+
 
 // Инициализация страницы
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('Загружаем корзину...')
+    
+    // Дополнительная задержка для Telegram Mini App
+    if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+        await new Promise(resolve => setTimeout(resolve, 500))
+    }
+    
     await updateCartDisplay()
+    
+    // Добавляем обработчик для кнопки оформления заказа
+    const checkoutButton = document.getElementById('checkout-button')
+    if (checkoutButton) {
+        checkoutButton.addEventListener('click', async () => {
+            const cartItems = await getCartItems()
+            if (cartItems.length === 0) {
+                alert('Корзина пуста!')
+                return
+            }
+            
+            // Здесь можно добавить логику оформления заказа
+            alert('Заказ оформлен! Спасибо за покупку!')
+            
+            // Очищаем корзину после оформления заказа
+            const user = await getUserData()
+            localStorage.removeItem(user.id)
+            await updateCartDisplay()
+        })
+    }
+    
     console.log('Корзина загружена!')
 }) 
