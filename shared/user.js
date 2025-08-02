@@ -86,52 +86,52 @@ export const getUserData = async () => {
     const tgWebAppData = urlParams.get('tgWebAppData');
     const userData = urlParams.get('user');
     
-    // if (tgWebAppData || userData || window.parent?.Telegram?.WebApp || window.opener?.Telegram?.WebApp) {
-    //     console.log('Telegram Mini App detected via URL parameters or parent window');
-    //     if (userData) {
-    //         try {
-    //             const parsedUserData = JSON.parse(userData);
-    //             console.log('Parsed user data from URL:', parsedUserData);
-    //             return parsedUserData;
-    //         } catch (parseError) {
-    //             console.log('Error parsing userData from URL:', parseError);
-    //         }
-    //     }
+    if (tgWebAppData || userData || window.parent?.Telegram?.WebApp || window.opener?.Telegram?.WebApp) {
+        console.log('Telegram Mini App detected via URL parameters or parent window');
+        if (userData) {
+            try {
+                const parsedUserData = JSON.parse(userData);
+                console.log('Parsed user data from URL:', parsedUserData);
+                return parsedUserData;
+            } catch (parseError) {
+                console.log('Error parsing userData from URL:', parseError);
+            }
+        }
         
         // Пробуем получить данные из parent window
-        // if (window.parent?.Telegram?.WebApp?.initData) {
-        //     console.log('Found Telegram WebApp in parent window');
-        //     const initData = window.parent.Telegram.WebApp.initData;
-        //     const params = new URLSearchParams(initData);
-        //     const parentUserData = params.get('user');
-        //     if (parentUserData) {
-        //         try {
-        //             const parsedUserData = JSON.parse(parentUserData);
-        //             console.log('Parsed user data from parent:', parsedUserData);
-        //             return parsedUserData;
-        //         } catch (parseError) {
-        //             console.log('Error parsing userData from parent:', parseError);
-        //         }
-        //     }
-        // }
+        if (window.parent?.Telegram?.WebApp?.initData) {
+            console.log('Found Telegram WebApp in parent window');
+            const initData = window.parent.Telegram.WebApp.initData;
+            const params = new URLSearchParams(initData);
+            const parentUserData = params.get('user');
+            if (parentUserData) {
+                try {
+                    const parsedUserData = JSON.parse(parentUserData);
+                    console.log('Parsed user data from parent:', parsedUserData);
+                    return parsedUserData;
+                } catch (parseError) {
+                    console.log('Error parsing userData from parent:', parseError);
+                }
+            }
+        }
         
         // Пробуем получить данные из opener window
-        // if (window.opener?.Telegram?.WebApp?.initData) {
-        //     console.log('Found Telegram WebApp in opener window');
-        //     const initData = window.opener.Telegram.WebApp.initData;
-        //     const params = new URLSearchParams(initData);
-        //     const openerUserData = params.get('user');
-        //     if (openerUserData) {
-        //         try {
-        //             const parsedUserData = JSON.parse(openerUserData);
-        //             console.log('Parsed user data from opener:', parsedUserData);
-        //             return parsedUserData;
-        //         } catch (parseError) {
-        //             console.log('Error parsing userData from opener:', parseError);
-        //         }
-        //     }
-        // }
-    // }
+        if (window.opener?.Telegram?.WebApp?.initData) {
+            console.log('Found Telegram WebApp in opener window');
+            const initData = window.opener.Telegram.WebApp.initData;
+            const params = new URLSearchParams(initData);
+            const openerUserData = params.get('user');
+            if (openerUserData) {
+                try {
+                    const parsedUserData = JSON.parse(openerUserData);
+                    console.log('Parsed user data from opener:', parsedUserData);
+                    return parsedUserData;
+                } catch (parseError) {
+                    console.log('Error parsing userData from opener:', parseError);
+                }
+            }
+        }
+    }
     
     // Fallback для обычного браузера или ошибки
     console.log('No Telegram WebApp detected, using fallback user ID: 215430');
