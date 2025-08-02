@@ -215,6 +215,59 @@ const updateTotalSumInstant = () => {
     }
 }
 
+// Функция для создания Telegram ссылки с заказом
+const createTelegramOrderLink = async (cartItems, user) => {
+    try {
+        // Получаем информацию о товарах
+        const orderItems = [];
+        let totalSum = 0;
+        
+        for (const cartItem of cartItems) {
+            const productInfo = await getProductInfo(cartItem.id);
+            if (productInfo) {
+                const itemTotal = parseFloat(productInfo.price.replace(',', '.')) * cartItem.count;
+                totalSum += itemTotal;
+                
+                orderItems.push({
+                    name: productInfo.name,
+                    price: productInfo.price,
+                    quantity: cartItem.count,
+                    total: itemTotal.toFixed(2)
+                });
+            }
+        }
+        
+        // Формируем текст заказа
+        const orderText = `🛒 *Новый заказ*
+        
+👤 *Покупатель:* ID ${user.id}
+📅 *Дата:* ${new Date().toLocaleString('ru-RU')}
+
+*Товары:*
+${orderItems.map(item => 
+    `• ${item.name} - ${item.price} ₽ × ${item.quantity} = ${item.total} ₽`
+).join('\n')}
+
+💰 *Итого:* ${totalSum.toFixed(2)} ₽
+
+---
+_Заказ создан через Mini App_`;
+        
+        // Кодируем текст для URL
+        const encodedText = encodeURIComponent(orderText);
+        
+        // Получаем username продавца из localStorage или используем fallback
+        const telegramUsername = localStorage.getItem('seller_username') || 'your_username';
+        const telegramLink = `https://t.me/${telegramUsername}?text=${encodedText}`;
+        
+        return telegramLink;
+        
+    } catch (error) {
+        console.error('Ошибка создания Telegram ссылки:', error);
+        return null;
+    }
+};
+
 // Функция для добавления обработчиков к конкретному элементу
 const addEventListenersToElement = (element) => {
     console.log('Adding event listeners to element:', element)
@@ -314,13 +367,39 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return
             }
             
-            // Здесь можно добавить логику оформления заказа
-            alert('Заказ оформлен! Спасибо за покупку!')
-            
-            // Очищаем корзину после оформления заказа
+            // Получаем данные пользователя
             const user = await getUserData()
-            localStorage.removeItem(user.id)
-            await updateCartDisplay()
+            
+            // Создаем Telegram ссылку с заказом
+            const telegramLink = await createTelegramOrderLink(cartItems, user)
+            
+            if (telegramLink) {
+                // Проверяем, находимся ли мы в Telegram Mini App
+                const telegramExists = typeof Telegram !== 'undefined' && Telegram && Telegram.WebApp;
+                
+                if (telegramExists) {
+                    // В Telegram Mini App используем встроенный метод
+                    try {
+                        Telegram.WebApp.openTelegramLink(telegramLink);
+                        console.log('Открываем Telegram ссылку через WebApp API');
+                    } catch (error) {
+                        console.log('Ошибка открытия через WebApp API, используем window.open');
+                        window.open(telegramLink, '_blank');
+                    }
+                } else {
+                    // В обычном браузере открываем в новой вкладке
+                    window.open(telegramLink, '_blank');
+                }
+                
+                // Показываем подтверждение
+                alert('Заказ отправлен! Откроется чат с продавцом.')
+                
+                // Очищаем корзину после отправки заказа
+                localStorage.removeItem(user.id)
+                await updateCartDisplay()
+            } else {
+                alert('Ошибка при создании заказа. Попробуйте еще раз.')
+            }
         })
     }
     
