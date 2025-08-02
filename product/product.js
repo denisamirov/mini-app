@@ -1,41 +1,5 @@
-// Функция для получения ID пользователя с ожиданием Telegram
-const getUserData = async () => {
-    // Ждем инициализации Telegram WebApp
-    if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
-        try {
-            // Ждем готовности Telegram WebApp с таймаутом
-            await new Promise((resolve) => {
-                const checkReady = () => {
-                    if (Telegram.WebApp.isExpanded !== undefined) {
-                        resolve();
-                    } else {
-                        Telegram.WebApp.ready();
-                        setTimeout(checkReady, 50);
-                    }
-                };
-                checkReady();
-            });
-            
-            // Дополнительная задержка для полной инициализации
-            await new Promise(resolve => setTimeout(resolve, 200));
-            
-            if (Telegram.WebApp.initData) {
-                const initData = Telegram.WebApp.initData
-                const params = new URLSearchParams(initData)
-                const userData = params.get('user');
-                console.log('Telegram initData:', initData);
-                console.log('Telegram userData:', userData);
-                return userData ? JSON.parse(userData) : { id: 215430 };
-            }
-        } catch (error) {
-            console.log('Telegram WebApp error:', error);
-        }
-    }
-    
-    // Fallback для обычного браузера или ошибки
-    console.log('Using fallback user ID: 215430');
-    return { id: 215430 };
-}
+// Импортируем универсальную функцию getUserData
+import { getUserData } from '../shared/user.js';
 
 // Функция для создания HTML кнопки с количеством
 const getQuantityInputHTML = (btnProductId, count = 1) => `
@@ -54,16 +18,27 @@ const updateProductsFromStorage = async (id, isAdd) => {
 
     if (!product) {
         productList.push({ id, count: 1 })
+        console.log('Product page: Adding new product with count 1')
     }
     else if (isAdd) {
         product.count += 1
+        console.log('Product page: Increasing product count to:', product.count)
     }
     else if (!isAdd) {
         product.count -= 1
+        console.log('Product page: Decreasing product count to:', product.count)
+        // Удаляем товар из корзины, если количество стало 0
+        if (product.count <= 0) {
+            const index = productList.findIndex(p => p.id == id);
+            if (index > -1) {
+                productList.splice(index, 1);
+                console.log('Product page: Removing product from cart (count <= 0)')
+            }
+        }
     }
 
     localStorage.setItem(user.id, JSON.stringify(productList));
-    console.log(user.id, localStorage.getItem(user.id))
+    console.log('Product page: Updated localStorage:', user.id, localStorage.getItem(user.id))
 }
 
 // Функция для инициализации кнопок количества
@@ -89,9 +64,23 @@ const initializeQuantityControls = (btnProductId) => {
         decreaseBtn.removeEventListener('click', decreaseBtn.decreaseHandler);
         decreaseBtn.decreaseHandler = function () {
             let quantityInput = this.parentElement.querySelector(`[btn_product_id="${btnProductId}"]`);
-            if (quantityInput && quantityInput.value >= 1) {
-                quantityInput.value = parseInt(quantityInput.value) - 1;
+            console.log('Product page: Decrease button clicked, current value:', quantityInput?.value);
+            
+            if (quantityInput && parseInt(quantityInput.value) >= 1) {
+                const newValue = parseInt(quantityInput.value) - 1;
+                quantityInput.value = newValue;
+                console.log('Product page: Decreasing quantity to:', newValue);
                 updateProductsFromStorage(btnProductId, false);
+                
+                // Если количество стало 0, заменяем на кнопку "Добавить"
+                if (newValue <= 0) {
+                    console.log('Product page: Quantity is 0, creating add button');
+                    setTimeout(() => {
+                        createAndReplaceButton(btnProductId);
+                    }, 100);
+                }
+            } else {
+                console.log('Product page: Cannot decrease: quantity is already 0 or input not found');
             }
         };
         decreaseBtn.addEventListener('click', decreaseBtn.decreaseHandler);
@@ -100,14 +89,29 @@ const initializeQuantityControls = (btnProductId) => {
 
 // Функция для создания кнопки "Добавить"
 const createAndReplaceButton = (btnProductId) => {
+    console.log('Product page: Creating add button for product:', btnProductId)
     const btn = document.createElement('button')
     btn.setAttribute('btn_product_id', btnProductId)
     btn.classList.add('buy-button')
     btn.textContent = 'Добавить'
 
-    document.querySelector(`[btn_product_id="${btnProductId}"]`)
-        .querySelector('.input-group')
-        .replaceWith(btn)
+    const container = document.querySelector(`[btn_product_id="${btnProductId}"]`)
+    if (container) {
+        container.innerHTML = ''
+        container.appendChild(btn)
+        console.log('Product page: Add button created successfully')
+        
+        // Добавляем обработчик для новой кнопки
+        btn.addEventListener('click', async (e) => {
+            e.stopPropagation() // Предотвращаем всплытие события
+            console.log('Product page: Add button clicked, adding product')
+            await updateProductsFromStorage(btnProductId, true)
+            container.innerHTML = getQuantityInputHTML(btnProductId)
+            initializeQuantityControls(btnProductId)
+        })
+    } else {
+        console.log('Product page: Container not found for product:', btnProductId)
+    }
 }
 
 // Основная логика загрузки продукта
@@ -167,7 +171,7 @@ else {
             }
             else {
                 const input = document.querySelector(`input[btn_product_id="${productId}"]`);
-                if (input && input.value == 0) {
+                if (input && parseInt(input.value) <= 0) {
                     createAndReplaceButton(productId);
                 } else {
                     initializeQuantityControls(productId);

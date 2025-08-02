@@ -1,32 +1,5 @@
-// Функция для получения ID пользователя с ожиданием Telegram
-const getUserData = async () => {
-    // Ждем инициализации Telegram WebApp
-    if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
-        try {
-            // Ждем готовности Telegram WebApp
-            await new Promise((resolve) => {
-                if (Telegram.WebApp.isExpanded !== undefined) {
-                    resolve();
-                } else {
-                    Telegram.WebApp.ready();
-                    setTimeout(resolve, 100);
-                }
-            });
-            
-            if (Telegram.WebApp.initData) {
-                const initData = Telegram.WebApp.initData
-                const params = new URLSearchParams(initData)
-                const userData = params.get('user');
-                return userData ? JSON.parse(userData) : { id: 215430 };
-            }
-        } catch (error) {
-            console.log('Telegram WebApp error:', error);
-        }
-    }
-    
-    // Fallback для обычного браузера или ошибки
-    return { id: 215430 };
-}
+// Импортируем универсальную функцию getUserData
+import { getUserData } from '../shared/user.js';
 
 // Функция для получения товаров из localStorage
 const getCartItems = async () => {

@@ -1,41 +1,5 @@
-// Функция для получения ID пользователя с ожиданием Telegram
-const getUserData = async () => {
-    // Ждем инициализации Telegram WebApp
-    if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
-        try {
-            // Ждем готовности Telegram WebApp с таймаутом
-            await new Promise((resolve) => {
-                const checkReady = () => {
-                    if (Telegram.WebApp.isExpanded !== undefined) {
-                        resolve();
-                    } else {
-                        Telegram.WebApp.ready();
-                        setTimeout(checkReady, 50);
-                    }
-                };
-                checkReady();
-            });
-            
-            // Дополнительная задержка для полной инициализации
-            await new Promise(resolve => setTimeout(resolve, 200));
-            
-            if (Telegram.WebApp.initData) {
-                const initData = Telegram.WebApp.initData
-                const params = new URLSearchParams(initData)
-                const userData = params.get('user');
-                console.log('Main page: Telegram initData:', initData);
-                console.log('Main page: Telegram userData:', userData);
-                return userData ? JSON.parse(userData) : { id: 215430 };
-            }
-        } catch (error) {
-            console.log('Telegram WebApp error:', error);
-        }
-    }
-    
-    // Fallback для обычного браузера или ошибки
-    console.log('Main page: Using fallback user ID: 215430');
-    return { id: 215430 };
-}
+// Импортируем универсальную функцию getUserData
+import { getUserData } from './shared/user.js';
 
 export const getQuantityInputHTML = (btnProductId, count) => `
     <div class="input-group product-input-amount">
@@ -102,7 +66,8 @@ const loadProducts = async () => {
     }
     
     // Загружаем buy-button.js после загрузки товаров
-    await import('./buy-button/buy-button.js');
+    const { initializeBuyButtons } = await import('./buy-button/buy-button.js');
+    initializeBuyButtons();
     console.log('Main page: Products loaded successfully');
 };
 
