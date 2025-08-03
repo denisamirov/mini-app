@@ -191,6 +191,50 @@ const updateCartDisplay = async () => {
 
     // Обновляем общую сумму
     await updateTotalSum()
+
+    // Добавляем обработчик для кнопки оформления заказа
+    const checkoutButton = document.getElementById('checkout-button')
+    if (checkoutButton && !checkoutButton.hasAttribute('data-listener-added')) {
+        console.log('Adding checkout button listener')
+        checkoutButton.setAttribute('data-listener-added', 'true')
+        checkoutButton.addEventListener('click', async () => {
+            const cartItems = await getCartItems()
+
+            if (cartItems.length === 0) {
+                alert('Корзина пуста!')
+                return
+            }
+
+            // Получаем данные пользователя
+            const user = await getUserData()
+
+            // Создаем Telegram ссылку с заказом
+            const telegramLink = await createTelegramOrderLink(cartItems, user)
+
+            if (telegramLink) {
+                // Проверяем, находимся ли мы в Telegram Mini App
+                const telegramExists = typeof Telegram !== 'undefined' && Telegram && Telegram.WebApp;
+
+                if (telegramExists) {
+                    // В Telegram Mini App используем встроенный метод
+                    try {
+                        Telegram.WebApp.openTelegramLink(telegramLink);
+                    } catch (error) {
+                        window.location.href = telegramLink;
+                    }
+                } else {
+                    // В обычном браузере перенаправляем на страницу
+                    window.location.href = telegramLink;
+                }
+
+                // Очищаем корзину после отправки заказа
+                localStorage.removeItem(user.id)
+                await updateCartDisplay()
+            } else {
+                alert('Ошибка при создании заказа. Попробуйте еще раз.')
+            }
+        })
+    }
 }
 
 
@@ -382,56 +426,14 @@ waitForTelegram(async () => {
 
         await updateCartDisplay()
 
-        // Скрываем прелоадер
-        hidePreloader();
+            // Скрываем прелоадер
+    hidePreloader();
 
-        console.log('Cart: Application fully loaded');
-    } catch (error) {
-        console.error('Error loading cart:', error);
-        hidePreloader();
-    }
+    console.log('Cart: Application fully loaded');
+} catch (error) {
+    console.error('Error loading cart:', error);
+    hidePreloader();
+}
 
-    // Добавляем обработчик для кнопки оформления заказа
-    const checkoutButton = document.getElementById('checkout-button')
-    if (checkoutButton) {
-        checkoutButton.addEventListener('click', async () => {
-            const cartItems = await getCartItems()
-
-            if (cartItems.length === 0) {
-                alert('Корзина пуста!')
-                return
-            }
-
-            // Получаем данные пользователя
-            const user = await getUserData()
-
-            // Создаем Telegram ссылку с заказом
-            const telegramLink = await createTelegramOrderLink(cartItems, user)
-
-            if (telegramLink) {
-                // Проверяем, находимся ли мы в Telegram Mini App
-                const telegramExists = typeof Telegram !== 'undefined' && Telegram && Telegram.WebApp;
-
-                if (telegramExists) {
-                    // В Telegram Mini App используем встроенный метод
-                    try {
-                        Telegram.WebApp.openTelegramLink(telegramLink);
-                    } catch (error) {
-                        window.location.href = telegramLink;
-                    }
-                } else {
-                    // В обычном браузере перенаправляем на страницу
-                    window.location.href = telegramLink;
-                }
-
-                // Очищаем корзину после отправки заказа
-                localStorage.removeItem(user.id)
-                await updateCartDisplay()
-            } else {
-                alert('Ошибка при создании заказа. Попробуйте еще раз.')
-            }
-        })
-    }
-
-    console.log('Корзина загружена!')
+console.log('Корзина загружена!')
 }) 
