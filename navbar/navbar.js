@@ -21,7 +21,7 @@ const loadBootstrapJS = () => {
 }
 
 // Безопасная загрузка Telegram JS
-const loadTelegramJSSafe = () => {
+const loadTelegramJSSafe = async() => {
     // Проверяем, находимся ли мы в Telegram Mini App
     const isTelegramWebApp = 
         window.location.href.includes('tgWebAppData') ||
@@ -33,7 +33,7 @@ const loadTelegramJSSafe = () => {
     if (isTelegramWebApp) {
         console.log('Telegram Mini App detected, loading Telegram JS...');
         try {
-            loadTelegramJS();
+            await loadTelegramJS();
         } catch (error) {
             console.log('Failed to load Telegram JS:', error);
         }
@@ -105,8 +105,8 @@ const loadScript = () => {
     attemptFetch()
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-    loadTelegramJSSafe();
+window.addEventListener('DOMContentLoaded', async() => {
+    await loadTelegramJSSafe();
     loadBootstrapCSS();
     loadBootstrapJS();
     loadNavBar();

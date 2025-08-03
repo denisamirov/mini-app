@@ -1,6 +1,6 @@
 
 // Импортируем универсальную функцию getUserData
-import { getUserData } from '../shared/user.js';
+import { getUserData } from '../telegram.js';
 
 // Функция инициализации кнопок
 const initializeBuyButtons = () => {

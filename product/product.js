@@ -1,5 +1,5 @@
 // Импортируем универсальную функцию getUserData
-import { getUserData } from '../shared/user.js';
+import { getUserData } from '../telegram.js';
 
 // Функция для создания HTML кнопки с количеством
 const getQuantityInputHTML = (btnProductId, count = 1) => `

@@ -1,5 +1,5 @@
 // Импортируем универсальную функцию getUserData
-import { getUserData } from './shared/user.js';
+import { getUserData } from '../telegram.js';
 
 export const getQuantityInputHTML = (btnProductId, count) => `
     <div class="input-group product-input-amount">
