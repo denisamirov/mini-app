@@ -1,28 +1,24 @@
+import { showPreloader, hidePreloader, setPreloaderText, initializePreloader } from './preloader/preloader.js';
+
 export const loadTelegramJS = async () => {
     const script = document.createElement('script')
     script.src = "https://telegram.org/js/telegram-web-app.js"
     script.defer = true
     document.head.insertBefore(script, document.head.firstChild)
-    script.onload = async () => {
-        await init()
-    }
-    script.onerror = () => {
-        console.log('Failed to load Telegram WebApp library from CDN');
-    }
+    script.onload = () => init()
 }
 
-const init = async () => {
-    const tg = window.Telegram?.WebApp;
-    console.log('The TelegramJS was uploaded successfully')
+const init = () => {
+    const tg = window.Telegram?.WebApp
+
     if (!tg) {
-        console.error('The TelegramJS was not uploaded, but continuing...');
+        console.error('The TelegramJS was not uploaded, but continuing...')
         return;
     }
 
-    const root = document.documentElement
+    console.log('The TelegramJS was uploaded successfully')
 
-    updateTheme(root, tg)
-
+    updateTheme(document.documentElement, tg)
     tg.onEvent('themeChanged', updateTheme)
 }
 
@@ -47,13 +43,13 @@ const updateTheme = (root, tg) => {
 
 // Универсальная функция для получения ID пользователя с ожиданием Telegram
 export const getUserData = async () => {
+    const testUser = { id: 215430 }
+
     if (Telegram.WebApp.initData) {
         const initData = Telegram.WebApp.initData
-        console.log('Telegram initData found:', initData);
 
         const params = new URLSearchParams(initData)
-        const userData = params.get('user');
-        console.log('Telegram userData:', userData);
+        const userData = params.get('user')
 
         if (userData) {
             try {
@@ -62,18 +58,17 @@ export const getUserData = async () => {
                 return parsedUserData;
             } catch (parseError) {
                 console.log('Error parsing userData:', parseError);
-                return { id: 215430 };
+                return testUser;
             }
         } else {
             console.log('No userData in initData, using fallback');
-            return { id: 215430 };
+            return testUser;
         }
     }
 
-    // Fallback для обычного браузера или ошибки
-    console.log('No Telegram WebApp detected, using fallback user ID: 215430');
-    return { id: 215430 };
-} 
+    console.log('No Telegram WebApp detected, using fallback user');
+    return testUser;
+}
 
 
 export const waitForTelegram = (callback) => {
@@ -89,22 +84,16 @@ export const waitForTelegram = (callback) => {
     }
 }
 
-// Импортируем функции прелоадера
-import { showPreloader, hidePreloader, setPreloaderText, initializePreloader } from './preloader/preloader.js';
-
-// Реэкспортируем функции прелоадера
-export { showPreloader, hidePreloader, setPreloaderText, initializePreloader };
 
 // Функция для ожидания полной загрузки Telegram WebApp
 export const waitForTelegramReady = () => {
     return new Promise((resolve) => {
         const telegramExists = typeof Telegram !== 'undefined' && Telegram && Telegram.WebApp;
-        
+
         if (telegramExists && Telegram.WebApp.isExpanded !== undefined) {
             console.log('Telegram WebApp already ready');
             resolve();
         } else {
-            console.log('Waiting for Telegram WebApp to be ready...');
             const checkReady = () => {
                 if (Telegram?.WebApp && Telegram.WebApp.isExpanded !== undefined) {
                     console.log('Telegram WebApp is now ready');
@@ -117,3 +106,5 @@ export const waitForTelegramReady = () => {
         }
     });
 }
+
+export { showPreloader, hidePreloader, setPreloaderText, initializePreloader };
