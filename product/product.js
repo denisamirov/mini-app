@@ -1,5 +1,5 @@
 // Импортируем универсальную функцию getUserData
-import { getUserData } from '../telegram.js';
+import { getUserData, waitForTelegram } from '../telegram.js';
 
 // Функция для создания HTML кнопки с количеством
 const getQuantityInputHTML = (btnProductId, count = 1) => `
@@ -182,4 +182,8 @@ else {
     
     // Запускаем инициализацию
     initializeProductPage();
+
+    waitForTelegram(async () => {
+        await initializeProductPage();
+    });
 }
