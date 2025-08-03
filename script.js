@@ -16,7 +16,6 @@ container.innerHTML = ''
 const productTemplate = async (product) => {
     const user = await getUserData();
     const userData = localStorage.getItem(user.id);
-    alert(userData, 'Подгрузка из локального хранилища')
     console.log(user, userData, 'Подгрузка из локального хранилища')
     let buttonHTML = `<button class="buy-button">Добавить</button>`;
     
