@@ -57,31 +57,6 @@ const goods = await response.json()
 
 // Асинхронная функция для загрузки товаров
 const loadProducts = async () => {
-    // Ждем инициализации Telegram перед загрузкой товаров
-    console.log('Main page: Starting product loading...');
-    
-    // Ждем полной загрузки Telegram WebApp библиотеки
-    const telegramExists = typeof Telegram !== 'undefined' && Telegram && Telegram.WebApp;
-    if (telegramExists) {
-        console.log('Main page: Telegram Mini App detected, waiting for library initialization...');
-        
-        // Ждем пока Telegram.WebApp будет полностью готов
-        await new Promise((resolve) => {
-            const checkReady = () => {
-                if (Telegram.WebApp && Telegram.WebApp.isExpanded !== undefined) {
-                    console.log('Main page: Telegram WebApp library is ready');
-                    resolve();
-                } else {
-                    console.log('Main page: Waiting for Telegram WebApp to be ready...');
-                    setTimeout(checkReady, 100);
-                }
-            };
-            checkReady();
-        });
-        
-        console.log('Main page: Telegram WebApp library initialization completed');
-    }
-    
     for (const product of goods) {
         const template = await productTemplate(product);
         container.insertAdjacentHTML('beforeend', template);
