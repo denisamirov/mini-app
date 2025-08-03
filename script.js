@@ -1,13 +1,8 @@
 // Импортируем универсальную функцию getUserData и функции прелоадера
 import { getUserData, waitForTelegram, showPreloader, hidePreloader, waitForTelegramReady, setPreloaderText } from './telegram.js';
 
-export const getQuantityInputHTML = (btnProductId, count) => `
-    <div class="input-group product-input-amount">
-        <button class="btn btn-outline-secondary decrease">-</button>
-        <input type="number" class="form-control text-center quantity" value="${count}" min="1" btn_product_id=${btnProductId} readonly>
-        <button class="btn btn-outline-secondary increase">+</button>
-    </div>`
-
+// Импортируем функции из buy-button модуля
+import { getQuantityInputHTML } from './buy-button/buy-button.js';
 
 const container = document.querySelector('.card-list')
 
