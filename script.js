@@ -1,5 +1,5 @@
-// Импортируем универсальную функцию getUserData
-import { getUserData, waitForTelegram } from './telegram.js';
+// Импортируем универсальную функцию getUserData и функции прелоадера
+import { getUserData, waitForTelegram, showPreloader, hidePreloader, waitForTelegramReady, setPreloaderText } from './telegram.js';
 
 export const getQuantityInputHTML = (btnProductId, count) => `
     <div class="input-group product-input-amount">
@@ -68,6 +68,25 @@ const loadProducts = async () => {
     console.log('Main page: Products loaded successfully');
 };
 
+// Показываем прелоадер сразу при загрузке
+showPreloader();
+setPreloaderText('Загрузка приложения...', 'Пожалуйста, подождите');
+
+// Ждем полной готовности Telegram WebApp
 waitForTelegram(async () => {
-    await loadProducts();
+    try {
+        // Дополнительно ждем полной инициализации
+        await waitForTelegramReady();
+        
+        // Загружаем товары
+        await loadProducts();
+        
+        // Скрываем прелоадер
+        hidePreloader();
+        
+        console.log('Main page: Application fully loaded');
+    } catch (error) {
+        console.error('Error loading application:', error);
+        hidePreloader();
+    }
 });

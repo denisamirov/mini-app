@@ -1,4 +1,4 @@
-import { loadTelegramJS } from "../telegram.js"
+import { loadTelegramJS, initializePreloader } from "../telegram.js"
 
 // Загрузка Bootstrap CSS
 const loadBootstrapCSS = () => {
@@ -84,6 +84,9 @@ const loadScript = () => {
 }
 
 window.addEventListener('DOMContentLoaded', async() => {
+    // Инициализируем прелоадер первым
+    await initializePreloader();
+    
     await loadTelegramJS();
     loadBootstrapCSS();
     loadBootstrapJS();

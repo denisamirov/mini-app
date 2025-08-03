@@ -1,5 +1,5 @@
-// Импортируем универсальную функцию getUserData
-import { getUserData, waitForTelegram } from '../telegram.js';
+// Импортируем универсальную функцию getUserData и функции прелоадера
+import { getUserData, waitForTelegram, showPreloader, hidePreloader, waitForTelegramReady, setPreloaderText } from '../telegram.js';
 
 // Функция для создания HTML кнопки с количеством
 const getQuantityInputHTML = (btnProductId, count = 1) => `
@@ -180,10 +180,25 @@ else {
         });
     };
     
-    // Запускаем инициализацию
-    initializeProductPage();
-
+    // Показываем прелоадер сразу при загрузке
+    showPreloader();
+    
+    // Ждем инициализации Telegram и затем проверяем корзину
     waitForTelegram(async () => {
-        await initializeProductPage();
+        try {
+            // Ждем полной инициализации Telegram WebApp
+            await waitForTelegramReady();
+            
+            // Запускаем инициализацию
+            await initializeProductPage();
+            
+            // Скрываем прелоадер
+            hidePreloader();
+            
+            console.log('Product page: Application fully loaded');
+        } catch (error) {
+            console.error('Error loading product page:', error);
+            hidePreloader();
+        }
     });
 }

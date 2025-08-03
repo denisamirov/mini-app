@@ -1,5 +1,5 @@
-// Импортируем универсальную функцию getUserData
-import { getUserData, waitForTelegram } from '../telegram.js';
+// Импортируем универсальную функцию getUserData и функции прелоадера
+import { getUserData, waitForTelegram, showPreloader, hidePreloader, waitForTelegramReady, setPreloaderText } from '../telegram.js';
 
 // Функция для получения товаров из localStorage
 const getCartItems = async () => {
@@ -344,19 +344,28 @@ const addEventListenersToElement = (element) => {
 
 
 
+// Показываем прелоадер сразу при загрузке
+showPreloader();
+setPreloaderText('Загрузка корзины...', 'Пожалуйста, подождите');
+
 // Инициализация страницы
 waitForTelegram(async () => {
-    console.log('Загружаем корзину...')
-    
-    // Дополнительная задержка для Telegram Mini App
-    const telegramExists = typeof Telegram !== 'undefined' && Telegram && Telegram.WebApp;
-    if (telegramExists) {
-        console.log('Telegram Mini App detected, waiting for initialization...')
-        await new Promise(resolve => setTimeout(resolve, 100))
-        console.log('Telegram Mini App initialization delay completed')
+    try {
+        console.log('Загружаем корзину...')
+        
+        // Ждем полной инициализации Telegram WebApp
+        await waitForTelegramReady();
+        
+        await updateCartDisplay()
+        
+        // Скрываем прелоадер
+        hidePreloader();
+        
+        console.log('Cart: Application fully loaded');
+    } catch (error) {
+        console.error('Error loading cart:', error);
+        hidePreloader();
     }
-    
-    await updateCartDisplay()
     
     // Добавляем обработчик для кнопки оформления заказа
     const checkoutButton = document.getElementById('checkout-button')

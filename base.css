@@ -14,7 +14,7 @@
 body {
     padding-top: 60px;
     background-color: var(--tg-theme-bg-color, rgb(255, 255, 255)) !important;
-    color: var(--tg-theme-text-color, rgb(0, 0, 0)) !important;
+    color: var(--tg-theme-text-color, rgb(0, 0, 0));
 }
 
 h1,

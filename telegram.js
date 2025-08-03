@@ -88,3 +88,32 @@ export const waitForTelegram = (callback) => {
         }, 100);
     }
 }
+
+// Импортируем функции прелоадера
+import { showPreloader, hidePreloader, setPreloaderText, initializePreloader } from './preloader/preloader.js';
+
+// Реэкспортируем функции прелоадера
+export { showPreloader, hidePreloader, setPreloaderText, initializePreloader };
+
+// Функция для ожидания полной загрузки Telegram WebApp
+export const waitForTelegramReady = () => {
+    return new Promise((resolve) => {
+        const telegramExists = typeof Telegram !== 'undefined' && Telegram && Telegram.WebApp;
+        
+        if (telegramExists && Telegram.WebApp.isExpanded !== undefined) {
+            console.log('Telegram WebApp already ready');
+            resolve();
+        } else {
+            console.log('Waiting for Telegram WebApp to be ready...');
+            const checkReady = () => {
+                if (Telegram?.WebApp && Telegram.WebApp.isExpanded !== undefined) {
+                    console.log('Telegram WebApp is now ready');
+                    resolve();
+                } else {
+                    setTimeout(checkReady, 100);
+                }
+            };
+            checkReady();
+        }
+    });
+}
