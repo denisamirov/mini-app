@@ -45,7 +45,13 @@ p {
     right: 0;
     background: #fff;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background: var(--tg-theme-bg-color, rgb(255, 255, 255)) !important;
     z-index: 1000;
+}
+
+.navbar-brand,
+.text {
+    color: var(--tg-theme-text-color, rgb(0, 0, 0));
 }
 
 .icon-with-text {

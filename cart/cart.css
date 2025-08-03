@@ -177,8 +177,8 @@
 
 .continue-shopping {
     display: inline-block;
-    background: #007bff;
-    color: white;
+    background: var(--tg-theme-button-color, #4CAF50);
+    color: var(--tg-theme-button-text-color, white);
     text-decoration: none;
     padding: 12px 24px;
     border-radius: 6px;
