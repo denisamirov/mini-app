@@ -6,31 +6,31 @@ const getCartItems = async () => {
     console.log('Cart: Getting user data...')
     const user = await getUserData()
     console.log('Cart: User ID:', user.id)
-    
+
     // Дополнительная проверка для Telegram Mini App
     const telegramExists = typeof Telegram !== 'undefined' && Telegram && Telegram.WebApp;
     if (telegramExists && user.id === 215430) {
         console.log('Cart: Telegram Mini App detected but using fallback user ID, waiting...')
         await new Promise(resolve => setTimeout(resolve, 500))
-        
+
         // Попробуем получить пользователя еще раз
         const retryUser = await getUserData()
         console.log('Cart: Retry User ID:', retryUser.id)
-        
+
         if (retryUser.id !== 215430) {
             console.log('Cart: Successfully got real user ID on retry')
             user.id = retryUser.id
         }
     }
-    
+
     const productListString = localStorage.getItem(user.id)
     console.log('Cart: localStorage data for user', user.id, ':', productListString)
-    
+
     if (!productListString) {
         console.log('Cart: No data in localStorage')
         return []
     }
-    
+
     try {
         const items = JSON.parse(productListString)
         console.log('Cart: Parsed items:', items)
@@ -46,7 +46,7 @@ const getProductInfo = async (productId) => {
     try {
         const response = await fetch('../goods.json')
         if (!response.ok) throw new Error('Ошибка загрузки товаров')
-        
+
         const goods = await response.json()
         return goods.find(product => product.id == productId)
     } catch (error) {
@@ -88,22 +88,22 @@ const removeFromCart = async (productId) => {
     const user = await getUserData()
     const productListString = localStorage.getItem(user.id)
     if (!productListString) return []
-    
+
     const productList = JSON.parse(productListString)
     const index = productList.findIndex(p => p.id == productId)
-    
+
     if (index > -1) {
         productList.splice(index, 1);
         localStorage.setItem(user.id, JSON.stringify(productList));
     }
-    
+
     return productList
 }
 
 // Функция для создания HTML элемента товара в корзине
 const createCartItemHTML = (product, quantity) => {
     const totalPrice = parseFloat(product.price.replace(',', '.')) * quantity
-    
+
     return `
         <div class="cart-item" data-product-id="${product.id}">
             <img src="${product.image_url}" alt="${product.name}" class="cart-item-image">
@@ -125,13 +125,37 @@ const createCartItemHTML = (product, quantity) => {
     `
 }
 
+const cartContainer = () => {
+    return `
+        <h1 class="cart-title">Корзина</h1>
+        
+        <div class="cart-items" id="cart-items">
+            <!-- Товары будут добавлены динамически -->
+        </div>
+        
+        <div class="cart-summary">
+            <div class="cart-total">
+                <span class="total-label">Итого:</span>
+                <span class="total-price" id="total-price">0 ₽</span>
+            </div>
+            <button class="checkout-button" id="checkout-button">Оформить заказ</button>
+        </div>
+        
+        <div class="empty-cart" id="empty-cart" style="display: none;">
+            <p>Ваша корзина пуста</p>
+            <a href="../index.html" class="continue-shopping">Продолжить покупки</a>
+        </div>
+    `
+}
+
 // Функция для обновления отображения корзины
 const updateCartDisplay = async () => {
+    document.querySelector('.cart-container').innerHTML = cartContainer()
     const cartItems = await getCartItems()
     const cartItemsContainer = document.getElementById('cart-items')
     const emptyCartDiv = document.getElementById('empty-cart')
     const cartSummaryDiv = document.querySelector('.cart-summary')
-    
+
     if (cartItems.length === 0) {
         // Показываем сообщение о пустой корзине
         cartItemsContainer.innerHTML = ''
@@ -139,21 +163,21 @@ const updateCartDisplay = async () => {
         cartSummaryDiv.style.display = 'none'
         return
     }
-    
+
     // Скрываем сообщение о пустой корзине
     emptyCartDiv.style.display = 'none'
     cartSummaryDiv.style.display = 'block'
-    
+
     // Очищаем контейнер
     cartItemsContainer.innerHTML = ''
-    
+
     // Добавляем каждый товар
     for (const cartItem of cartItems) {
         const productInfo = await getProductInfo(cartItem.id)
         if (productInfo) {
             const itemHTML = createCartItemHTML(productInfo, cartItem.count)
             cartItemsContainer.insertAdjacentHTML('beforeend', itemHTML)
-            
+
             // Добавляем обработчики к последнему добавленному элементу
             const lastElement = cartItemsContainer.lastElementChild
             if (lastElement) {
@@ -164,7 +188,7 @@ const updateCartDisplay = async () => {
             }
         }
     }
-    
+
     // Обновляем общую сумму
     await updateTotalSum()
 }
@@ -174,7 +198,7 @@ const updateCartDisplay = async () => {
 const updateTotalSum = async () => {
     const cartItems = await getCartItems()
     let totalSum = 0
-    
+
     // Используем кэшированные цены из DOM для быстрого расчета
     for (const cartItem of cartItems) {
         const cartItemElement = document.querySelector(`[data-product-id="${cartItem.id}"]`)
@@ -186,7 +210,7 @@ const updateTotalSum = async () => {
             }
         }
     }
-    
+
     const totalPriceElement = document.getElementById('total-price')
     if (totalPriceElement) {
         totalPriceElement.textContent = `${totalSum.toFixed(2)} ₽`
@@ -196,19 +220,19 @@ const updateTotalSum = async () => {
 // Функция для мгновенного обновления общей суммы
 const updateTotalSumInstant = () => {
     let totalSum = 0
-    
+
     // Используем текущие значения из DOM
     document.querySelectorAll('.cart-item').forEach(cartItemElement => {
         const priceElement = cartItemElement.querySelector('.cart-item-price')
         const quantityInput = cartItemElement.querySelector('.quantity-input')
-        
+
         if (priceElement && quantityInput) {
             const price = parseFloat(priceElement.textContent.replace(' ₽', '').replace(',', '.'))
             const quantity = parseInt(quantityInput.value) || 0
             totalSum += price * quantity
         }
     })
-    
+
     const totalPriceElement = document.getElementById('total-price')
     if (totalPriceElement) {
         totalPriceElement.textContent = `${totalSum.toFixed(2)} ₽`
@@ -221,14 +245,14 @@ const createTelegramOrderLink = async (cartItems, user) => {
         // Получаем информацию о товарах
         const orderItems = [];
         let totalSum = 0;
-        
+
         for (const cartItem of cartItems) {
             const productInfo = await getProductInfo(cartItem.id);
-            
+
             if (productInfo) {
                 const itemTotal = parseFloat(productInfo.price.replace(',', '.')) * cartItem.count;
                 totalSum += itemTotal;
-                
+
                 orderItems.push({
                     name: productInfo.name,
                     price: productInfo.price,
@@ -237,7 +261,7 @@ const createTelegramOrderLink = async (cartItems, user) => {
                 });
             }
         }
-        
+
         // Формируем текст заказа
         const orderText = `🛒 *Новый заказ*
         
@@ -245,24 +269,24 @@ const createTelegramOrderLink = async (cartItems, user) => {
 📅 *Дата:* ${new Date().toLocaleString('ru-RU')}
 
 *Товары:*
-${orderItems.map(item => 
-    `• ${item.name} - ${item.price} ₽ × ${item.quantity} = ${item.total} ₽`
-).join('\n')}
+${orderItems.map(item =>
+            `• ${item.name} - ${item.price} ₽ × ${item.quantity} = ${item.total} ₽`
+        ).join('\n')}
 
 💰 *Итого:* ${totalSum.toFixed(2)} ₽
 
 ---
 _Заказ создан через Mini App_`;
-        
+
         // Кодируем текст для URL
         const encodedText = encodeURIComponent(orderText);
-        
+
         // Получаем username продавца из localStorage или используем test_seller
         const telegramUsername = localStorage.getItem('seller_username') || 'test_seller';
         const telegramLink = `https://t.me/${telegramUsername}?text=${encodedText}`;
-        
+
         return telegramLink;
-        
+
     } catch (error) {
         console.error('Ошибка создания Telegram ссылки:', error);
         return null;
@@ -272,7 +296,7 @@ _Заказ создан через Mini App_`;
 // Функция для добавления обработчиков к конкретному элементу
 const addEventListenersToElement = (element) => {
     console.log('Adding event listeners to element:', element)
-    
+
     // Обработчик для кнопки увеличения количества
     const increaseBtn = element.querySelector('.increase-btn')
     if (increaseBtn && !increaseBtn.hasAttribute('data-listener-added')) {
@@ -282,21 +306,21 @@ const addEventListenersToElement = (element) => {
             e.preventDefault()
             console.log('Increase button clicked for product:', e.target.dataset.productId)
             const productId = e.target.dataset.productId
-            
+
             // Мгновенно обновляем UI
             const quantityInput = element.querySelector('.quantity-input')
             if (quantityInput) {
                 quantityInput.value = parseInt(quantityInput.value) + 1
             }
-            
+
             // Мгновенно обновляем общую сумму
             updateTotalSumInstant()
-            
+
             // Обновляем localStorage в фоне
             updateProductsFromStorage(productId, true)
         })
     }
-    
+
     // Обработчик для кнопки уменьшения количества
     const decreaseBtn = element.querySelector('.decrease-btn')
     if (decreaseBtn && !decreaseBtn.hasAttribute('data-listener-added')) {
@@ -306,15 +330,15 @@ const addEventListenersToElement = (element) => {
             e.preventDefault()
             console.log('Decrease button clicked for product:', e.target.dataset.productId)
             const productId = e.target.dataset.productId
-            
+
             const quantityInput = element.querySelector('.quantity-input')
             if (quantityInput && parseInt(quantityInput.value) > 1) {
                 // Мгновенно обновляем UI
                 quantityInput.value = parseInt(quantityInput.value) - 1
-                
+
                 // Мгновенно обновляем общую сумму
                 updateTotalSumInstant()
-                
+
                 // Обновляем localStorage в фоне
                 updateProductsFromStorage(productId, false)
             } else if (quantityInput && parseInt(quantityInput.value) === 1) {
@@ -325,7 +349,7 @@ const addEventListenersToElement = (element) => {
             }
         })
     }
-    
+
     // Обработчик для кнопки удаления
     const removeBtn = element.querySelector('.remove-item')
     if (removeBtn && !removeBtn.hasAttribute('data-listener-added')) {
@@ -352,42 +376,42 @@ setPreloaderText('Загрузка корзины...', 'Пожалуйста, п
 waitForTelegram(async () => {
     try {
         console.log('Загружаем корзину...')
-        
+
         // Ждем полной инициализации Telegram WebApp
         await waitForTelegramReady();
-        
+
         await updateCartDisplay()
-        
+
         // Скрываем прелоадер
         hidePreloader();
-        
+
         console.log('Cart: Application fully loaded');
     } catch (error) {
         console.error('Error loading cart:', error);
         hidePreloader();
     }
-    
+
     // Добавляем обработчик для кнопки оформления заказа
     const checkoutButton = document.getElementById('checkout-button')
     if (checkoutButton) {
         checkoutButton.addEventListener('click', async () => {
             const cartItems = await getCartItems()
-            
+
             if (cartItems.length === 0) {
                 alert('Корзина пуста!')
                 return
             }
-            
+
             // Получаем данные пользователя
             const user = await getUserData()
-            
+
             // Создаем Telegram ссылку с заказом
             const telegramLink = await createTelegramOrderLink(cartItems, user)
-            
+
             if (telegramLink) {
                 // Проверяем, находимся ли мы в Telegram Mini App
                 const telegramExists = typeof Telegram !== 'undefined' && Telegram && Telegram.WebApp;
-                
+
                 if (telegramExists) {
                     // В Telegram Mini App используем встроенный метод
                     try {
@@ -399,7 +423,7 @@ waitForTelegram(async () => {
                     // В обычном браузере перенаправляем на страницу
                     window.location.href = telegramLink;
                 }
-                
+
                 // Очищаем корзину после отправки заказа
                 localStorage.removeItem(user.id)
                 await updateCartDisplay()
@@ -408,6 +432,6 @@ waitForTelegram(async () => {
             }
         })
     }
-    
+
     console.log('Корзина загружена!')
 }) 

@@ -36,3 +36,12 @@
     margin: 20px 10px;
     text-align: center;
 }
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}

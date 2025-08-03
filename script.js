@@ -57,6 +57,8 @@ const goods = await response.json()
 
 // Асинхронная функция для загрузки товаров
 const loadProducts = async () => {
+    document.querySelector('.title').innerHTML = 'Товары нашего магазина'
+    
     for (const product of goods) {
         const template = await productTemplate(product);
         container.insertAdjacentHTML('beforeend', template);
