@@ -1,5 +1,5 @@
 // Импортируем универсальную функцию getUserData
-import { getUserData } from '../telegram.js';
+import { getUserData } from './telegram.js';
 
 export const getQuantityInputHTML = (btnProductId, count) => `
     <div class="input-group product-input-amount">
@@ -16,6 +16,7 @@ container.innerHTML = ''
 const productTemplate = async (product) => {
     const user = await getUserData();
     const userData = localStorage.getItem(user.id);
+    alert(userData, 'Подгрузка из локального хранилища')
     console.log(user, userData, 'Подгрузка из локального хранилища')
     let buttonHTML = `<button class="buy-button">Добавить</button>`;
     

@@ -58,8 +58,6 @@ export const getUserData = async () => {
         telegramExists && 
         Telegram.WebApp &&
         (window.Telegram || window.telegram || Telegram.WebApp.initData || Telegram.WebApp.isExpanded !== undefined) ||
-        // window.parent?.Telegram?.WebApp ||
-        // window.opener?.Telegram?.WebApp ||
         window.location.href.includes('tgWebAppData') ||
         window.location.href.includes('telegram') ||
         window.location.href.includes('t.me');
