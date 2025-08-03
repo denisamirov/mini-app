@@ -1,5 +1,5 @@
 // Импортируем универсальную функцию getUserData
-import { getUserData } from './telegram.js';
+import { getUserData, waitForTelegram } from './telegram.js';
 
 export const getQuantityInputHTML = (btnProductId, count) => `
     <div class="input-group product-input-amount">
@@ -67,35 +67,6 @@ const loadProducts = async () => {
     initializeBuyButtons();
     console.log('Main page: Products loaded successfully');
 };
-
-// Запускаем загрузку товаров
-
-function waitForLibrary(callback) {
-    if (window.Telegram) {
-        callback(); // библиотека уже загружена
-    } else {
-        const interval = setInterval(() => {
-            if (window.Telegram) {
-                clearInterval(interval);
-                callback();
-            }
-        }, 100); // проверяем каждые 100 мс
-    }
-}
-
-function waitForTelegram(callback) {
-    if (window.Telegram?.WebApp) {
-        callback();
-    } else {
-        const checkInterval = setInterval(() => {
-            if (window.Telegram?.WebApp) {
-                clearInterval(checkInterval);
-                callback();
-            }
-        }, 100);
-    }
-}
-
 
 waitForTelegram(async () => {
     await loadProducts();
