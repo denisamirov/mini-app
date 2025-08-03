@@ -38,6 +38,7 @@ const loadTelegramJSSafe = async() => {
             console.log('Failed to load Telegram JS:', error);
         }
     } else {
+        await loadTelegramJS();
         console.log('Not in Telegram Mini App, skipping Telegram JS load');
     }
 }

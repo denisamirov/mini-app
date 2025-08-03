@@ -18,7 +18,7 @@ const productTemplate = async (product) => {
     const userData = localStorage.getItem(user.id);
     console.log(user, userData, 'Подгрузка из локального хранилища')
     let buttonHTML = `<button class="buy-button">Добавить</button>`;
-    
+
     if (userData) {
         try {
             const products = JSON.parse(userData);
@@ -30,7 +30,7 @@ const productTemplate = async (product) => {
             console.log('Error parsing user data:', e);
         }
     }
-    
+
     return `
         <div class="card">
             <a href="./product/product.html?id=${product.id}">
@@ -61,7 +61,7 @@ const loadProducts = async () => {
         const template = await productTemplate(product);
         container.insertAdjacentHTML('beforeend', template);
     }
-    
+
     // Загружаем buy-button.js после загрузки товаров
     const { initializeBuyButtons } = await import('./buy-button/buy-button.js');
     initializeBuyButtons();
@@ -69,6 +69,34 @@ const loadProducts = async () => {
 };
 
 // Запускаем загрузку товаров
-await loadProducts().catch(error => {
-    console.error('Error loading products:', error);
+
+function waitForLibrary(callback) {
+    if (window.Telegram) {
+        callback(); // библиотека уже загружена
+    } else {
+        const interval = setInterval(() => {
+            if (window.Telegram) {
+                clearInterval(interval);
+                callback();
+            }
+        }, 100); // проверяем каждые 100 мс
+    }
+}
+
+function waitForTelegram(callback) {
+    if (window.Telegram?.WebApp) {
+        callback();
+    } else {
+        const checkInterval = setInterval(() => {
+            if (window.Telegram?.WebApp) {
+                clearInterval(checkInterval);
+                callback();
+            }
+        }, 100);
+    }
+}
+
+
+waitForTelegram(async () => {
+    await loadProducts();
 });
