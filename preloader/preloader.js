@@ -62,6 +62,7 @@ const loadPreloaderHTML = async () => {
 export const showPreloader = () => {
     const preloader = document.getElementById('preloader')
     if (preloader) {
+        preloader.style.display = 'flex'
         preloader.classList.remove('hidden')
     }
 }
@@ -71,6 +72,13 @@ export const hidePreloader = () => {
     const preloader = document.getElementById('preloader')
     if (preloader) {
         preloader.classList.add('hidden')
+        
+        // Ждем окончания анимации и полностью скрываем элемент
+        setTimeout(() => {
+            if (preloader.classList.contains('hidden')) {
+                preloader.style.display = 'none'
+            }
+        }, 500) // 500ms = время анимации
     }
 }
 
