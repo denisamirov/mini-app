@@ -1,5 +1,5 @@
 // Импортируем универсальную функцию getUserData
-import { getUserData } from '../telegram.js';
+import { getUserData, waitForTelegram } from '../telegram.js';
 
 // Функция для получения товаров из localStorage
 const getCartItems = async () => {
@@ -345,14 +345,14 @@ const addEventListenersToElement = (element) => {
 
 
 // Инициализация страницы
-document.addEventListener('DOMContentLoaded', async () => {
+waitForTelegram(async () => {
     console.log('Загружаем корзину...')
     
     // Дополнительная задержка для Telegram Mini App
     const telegramExists = typeof Telegram !== 'undefined' && Telegram && Telegram.WebApp;
     if (telegramExists) {
         console.log('Telegram Mini App detected, waiting for initialization...')
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        await new Promise(resolve => setTimeout(resolve, 100))
         console.log('Telegram Mini App initialization delay completed')
     }
     
