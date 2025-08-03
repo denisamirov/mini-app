@@ -115,6 +115,8 @@ const createAndReplaceButton = (btnProductId) => {
 }
 
 // Основная логика загрузки продукта
+showPreloader();
+
 const response = await fetch('../goods.json')
 
 if (!response.ok) throw new Error('Ошибка загрузки товаров')
@@ -181,7 +183,6 @@ else {
     };
     
     // Показываем прелоадер сразу при загрузке
-    showPreloader();
     
     // Ждем инициализации Telegram и затем проверяем корзину
     waitForTelegram(async () => {
