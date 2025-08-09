@@ -117,93 +117,101 @@ const cartContainer = () => {
     `
 }
 
-// Функция для обновления отображения корзины
-const updateCartDisplay = async () => {
-    document.querySelector('.cart-container').innerHTML = cartContainer()
-    const cartItems = await getCartItems()
-    const cartItemsContainer = document.getElementById('cart-items')
-    const emptyCartDiv = document.getElementById('empty-cart')
-    const cartSummaryDiv = document.querySelector('.cart-summary')
+// Отрисовка каркаса корзины
+const renderCartScaffold = () => {
+    const container = document.querySelector('.cart-container')
+    container.innerHTML = cartContainer()
+}
 
-    if (cartItems.length === 0) {
-        // Показываем сообщение о пустой корзине
+// Получение ссылок на ключевые DOM-элементы корзины
+const getCartDomRefs = () => {
+    return {
+        cartItemsContainer: document.getElementById('cart-items'),
+        emptyCartDiv: document.getElementById('empty-cart'),
+        cartSummaryDiv: document.querySelector('.cart-summary'),
+    }
+}
+
+// Переключение состояния пустой/непустой корзины
+const setEmptyCartState = (isEmpty, refs) => {
+    const { cartItemsContainer, emptyCartDiv, cartSummaryDiv } = refs
+    if (isEmpty) {
         cartItemsContainer.innerHTML = ''
         emptyCartDiv.style.display = 'block'
         cartSummaryDiv.style.display = 'none'
         return
     }
-
-    // Скрываем сообщение о пустой корзине
     emptyCartDiv.style.display = 'none'
     cartSummaryDiv.style.display = 'block'
+}
 
-    // Очищаем контейнер
-    cartItemsContainer.innerHTML = ''
-
-    // Добавляем каждый товар
+// Рендер товаров корзины
+const renderCartItems = async (cartItems, container) => {
+    container.innerHTML = ''
     for (const cartItem of cartItems) {
         const productInfo = await getProductInfo(cartItem.id)
-        if (productInfo) {
-            const itemHTML = createCartItemHTML(productInfo, cartItem.count)
-            cartItemsContainer.insertAdjacentHTML('beforeend', itemHTML)
+        if (!productInfo) continue
 
-            // Добавляем обработчики к последнему добавленному элементу
-            const lastElement = cartItemsContainer.lastElementChild
-            if (lastElement) {
-                console.log('Adding event listeners to cart item:', cartItem.id)
-                addEventListenersToElement(lastElement)
-            } else {
-                console.log('Failed to find last element for product:', cartItem.id)
-            }
+        const itemHTML = createCartItemHTML(productInfo, cartItem.count)
+        container.insertAdjacentHTML('beforeend', itemHTML)
+
+        const lastElement = container.lastElementChild
+        if (lastElement) {
+            addEventListenersToElement(lastElement)
         }
     }
+}
 
-    // Обновляем общую сумму
-    await updateTotalSum()
-
-    // Добавляем обработчик для кнопки оформления заказа
+// Обработчик кнопки оформления заказа
+const attachCheckoutHandler = () => {
     const checkoutButton = document.getElementById('checkout-button')
-    if (checkoutButton && !checkoutButton.hasAttribute('data-listener-added')) {
-        console.log('Adding checkout button listener')
-        checkoutButton.setAttribute('data-listener-added', 'true')
-        checkoutButton.addEventListener('click', async () => {
-            const cartItems = await getCartItems()
+    if (!checkoutButton || checkoutButton.hasAttribute('data-listener-added')) return
 
-            if (cartItems.length === 0) {
-                alert('Корзина пуста!')
-                return
-            }
+    console.log('Adding checkout button listener')
+    checkoutButton.setAttribute('data-listener-added', 'true')
+    checkoutButton.addEventListener('click', async () => {
+        const cartItems = await getCartItems()
+        if (cartItems.length === 0) {
+            alert('Корзина пуста!')
+            return
+        }
 
-            // Получаем данные пользователя
-            const user = await getUserData()
+        const user = await getUserData()
+        const telegramLink = await createTelegramOrderLink(cartItems, user)
 
-            // Создаем Telegram ссылку с заказом
-            const telegramLink = await createTelegramOrderLink(cartItems, user)
-
-            if (telegramLink) {
-                // Проверяем, находимся ли мы в Telegram Mini App
-                const telegramExists = typeof Telegram !== 'undefined' && Telegram && Telegram.WebApp;
-
-                if (telegramExists) {
-                    // В Telegram Mini App используем встроенный метод
-                    try {
-                        Telegram.WebApp.openTelegramLink(telegramLink);
-                    } catch (error) {
-                        window.location.href = telegramLink;
-                    }
-                } else {
-                    // В обычном браузере перенаправляем на страницу
-                    window.location.href = telegramLink;
+        if (telegramLink) {
+            const telegramExists = typeof Telegram !== 'undefined' && Telegram && Telegram.WebApp
+            if (telegramExists) {
+                try {
+                    Telegram.WebApp.openTelegramLink(telegramLink)
+                } catch (error) {
+                    window.location.href = telegramLink
                 }
-
-                // Очищаем корзину после отправки заказа
-                localStorage.removeItem(user.id)
-                await updateCartDisplay()
             } else {
-                alert('Ошибка при создании заказа. Попробуйте еще раз.')
+                window.location.href = telegramLink
             }
-        })
-    }
+
+            localStorage.removeItem(user.id)
+            await updateCartDisplay()
+        } else {
+            alert('Ошибка при создании заказа. Попробуйте еще раз.')
+        }
+    })
+}
+
+// Обновление отображения корзины (оркестратор)
+const updateCartDisplay = async () => {
+    renderCartScaffold()
+    const cartItems = await getCartItems()
+    const refs = getCartDomRefs()
+
+    const isEmpty = cartItems.length === 0
+    setEmptyCartState(isEmpty, refs)
+    if (isEmpty) return
+
+    await renderCartItems(cartItems, refs.cartItemsContainer)
+    await updateTotalSum()
+    attachCheckoutHandler()
 }
 
 
@@ -230,59 +238,62 @@ const updateTotalSum = async () => {
     }
 }
 
-// Функция для создания Telegram ссылки с заказом
-const createTelegramOrderLink = async (cartItems, user) => {
-    try {
-        // Получаем информацию о товарах
-        const orderItems = [];
-        let totalSum = 0;
+// Построение данных заказа
+const buildOrderData = async (cartItems) => {
+    const orderItems = []
+    let totalSum = 0
 
-        for (const cartItem of cartItems) {
-            const productInfo = await getProductInfo(cartItem.id);
+    for (const cartItem of cartItems) {
+        const productInfo = await getProductInfo(cartItem.id)
+        if (!productInfo) continue
 
-            if (productInfo) {
-                const itemTotal = parseFloat(productInfo.price.replace(',', '.')) * cartItem.count;
-                totalSum += itemTotal;
+        const itemTotal = parseFloat(productInfo.price.replace(',', '.')) * cartItem.count
+        totalSum += itemTotal
+        orderItems.push({
+            name: productInfo.name,
+            price: productInfo.price,
+            quantity: cartItem.count,
+            total: itemTotal.toFixed(2),
+        })
+    }
 
-                orderItems.push({
-                    name: productInfo.name,
-                    price: productInfo.price,
-                    quantity: cartItem.count,
-                    total: itemTotal.toFixed(2)
-                });
-            }
-        }
+    return { orderItems, totalSum }
+}
 
-        // Формируем текст заказа
-        const orderText = `🛒 *Новый заказ*
+// Формирование текста заказа
+const buildOrderText = (orderItems, totalSum, userId) => {
+    return `🛒 *Новый заказ*
         
-👤 *Покупатель:* ID ${user.id}
+👤 *Покупатель:* ID ${userId}
 📅 *Дата:* ${new Date().toLocaleString('ru-RU')}
 
 *Товары:*
-${orderItems.map(item =>
-            `• ${item.name} - ${item.price} ₽ × ${item.quantity} = ${item.total} ₽`
-        ).join('\n')}
+${orderItems.map(item => `• ${item.name} - ${item.price} ₽ × ${item.quantity} = ${item.total} ₽`).join('\n')}
 
 💰 *Итого:* ${totalSum.toFixed(2)} ₽
 
 ---
-_Заказ создан через Mini App_`;
+_Заказ создан через Mini App_`
+}
 
-        // Кодируем текст для URL
-        const encodedText = encodeURIComponent(orderText);
+// Сборка Telegram ссылки
+const buildTelegramLink = (orderText, user) => {
+    const encodedText = encodeURIComponent(orderText)
+    const telegramUsername = localStorage.getItem('seller_username') || user.id
+    return `https://t.me/${telegramUsername}?text=${encodedText}`
+}
 
-        // Получаем username продавца из localStorage или используем test_seller
-        const telegramUsername = localStorage.getItem('seller_username') || user.id;
-        const telegramLink = `https://t.me/${telegramUsername}?text=${encodedText}`;
-
-        return telegramLink;
-
+// Функция для создания Telegram ссылки с заказом
+const createTelegramOrderLink = async (cartItems, user) => {
+    try {
+        const { orderItems, totalSum } = await buildOrderData(cartItems)
+        const orderText = buildOrderText(orderItems, totalSum, user.id)
+        return buildTelegramLink(orderText, user)
     } catch (error) {
-        console.error('Ошибка создания Telegram ссылки:', error);
-        return null;
+        console.error('Ошибка создания Telegram ссылки:', error)
+        return null
     }
-};
+}
 
 // Функция для добавления обработчиков к конкретному элементу
 const addEventListenersToElement = (element) => {
