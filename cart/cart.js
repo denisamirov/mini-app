@@ -55,33 +55,7 @@ const getProductInfo = async (productId) => {
     }
 }
 
-// Функция для обновления localStorage
-const updateProductsFromStorage = async (id, isAdd) => {
-    const user = await getUserData()
-    const productListString = localStorage.getItem(user.id)
-    const productList = productListString ? JSON.parse(productListString) : []
-    const product = productList.find(product => product.id == id)
-
-    if (!product) {
-        productList.push({ id, count: 1 })
-    }
-    else if (isAdd) {
-        product.count += 1
-    }
-    else if (!isAdd) {
-        product.count -= 1
-        // Удаляем товар из корзины, если количество стало 0
-        if (product.count <= 0) {
-            const index = productList.findIndex(p => p.id == id);
-            if (index > -1) {
-                productList.splice(index, 1);
-            }
-        }
-    }
-
-    localStorage.setItem(user.id, JSON.stringify(productList));
-    return productList
-}
+// Редактирование количества товаров в корзине недоступно на странице корзины
 
 // Функция для удаления товара из корзины
 const removeFromCart = async (productId) => {
@@ -111,12 +85,7 @@ const createCartItemHTML = (product, quantity) => {
                 <div class="cart-item-name">${product.name}</div>
                 <div class="cart-item-price">${product.price} ₽</div>
                 <div class="cart-item-quantity">
-                    <span>Количество:</span>
-                    <div class="quantity-controls">
-                        <button class="quantity-btn decrease-btn" data-product-id="${product.id}">-</button>
-                        <input type="number" class="quantity-input" value="${quantity}" min="1" readonly>
-                        <button class="quantity-btn increase-btn" data-product-id="${product.id}">+</button>
-                    </div>
+                    <span>Количество: ${quantity}</span>
                 </div>
             </div>
             <div class="cart-item-total">${totalPrice.toFixed(2)} ₽</div>
@@ -261,28 +230,6 @@ const updateTotalSum = async () => {
     }
 }
 
-// Функция для мгновенного обновления общей суммы
-const updateTotalSumInstant = () => {
-    let totalSum = 0
-
-    // Используем текущие значения из DOM
-    document.querySelectorAll('.cart-item').forEach(cartItemElement => {
-        const priceElement = cartItemElement.querySelector('.cart-item-price')
-        const quantityInput = cartItemElement.querySelector('.quantity-input')
-
-        if (priceElement && quantityInput) {
-            const price = parseFloat(priceElement.textContent.replace(' ₽', '').replace(',', '.'))
-            const quantity = parseInt(quantityInput.value) || 0
-            totalSum += price * quantity
-        }
-    })
-
-    const totalPriceElement = document.getElementById('total-price')
-    if (totalPriceElement) {
-        totalPriceElement.textContent = `${totalSum.toFixed(2)} ₽`
-    }
-}
-
 // Функция для создания Telegram ссылки с заказом
 const createTelegramOrderLink = async (cartItems, user) => {
     try {
@@ -341,59 +288,6 @@ _Заказ создан через Mini App_`;
 const addEventListenersToElement = (element) => {
     console.log('Adding event listeners to element:', element)
 
-    // Обработчик для кнопки увеличения количества
-    const increaseBtn = element.querySelector('.increase-btn')
-    if (increaseBtn && !increaseBtn.hasAttribute('data-listener-added')) {
-        console.log('Adding increase button listener for product:', increaseBtn.dataset.productId)
-        increaseBtn.setAttribute('data-listener-added', 'true')
-        increaseBtn.addEventListener('click', async (e) => {
-            e.preventDefault()
-            console.log('Increase button clicked for product:', e.target.dataset.productId)
-            const productId = e.target.dataset.productId
-
-            // Мгновенно обновляем UI
-            const quantityInput = element.querySelector('.quantity-input')
-            if (quantityInput) {
-                quantityInput.value = parseInt(quantityInput.value) + 1
-            }
-
-            // Мгновенно обновляем общую сумму
-            updateTotalSumInstant()
-
-            // Обновляем localStorage в фоне
-            updateProductsFromStorage(productId, true)
-        })
-    }
-
-    // Обработчик для кнопки уменьшения количества
-    const decreaseBtn = element.querySelector('.decrease-btn')
-    if (decreaseBtn && !decreaseBtn.hasAttribute('data-listener-added')) {
-        console.log('Adding decrease button listener for product:', decreaseBtn.dataset.productId)
-        decreaseBtn.setAttribute('data-listener-added', 'true')
-        decreaseBtn.addEventListener('click', async (e) => {
-            e.preventDefault()
-            console.log('Decrease button clicked for product:', e.target.dataset.productId)
-            const productId = e.target.dataset.productId
-
-            const quantityInput = element.querySelector('.quantity-input')
-            if (quantityInput && parseInt(quantityInput.value) > 1) {
-                // Мгновенно обновляем UI
-                quantityInput.value = parseInt(quantityInput.value) - 1
-
-                // Мгновенно обновляем общую сумму
-                updateTotalSumInstant()
-
-                // Обновляем localStorage в фоне
-                updateProductsFromStorage(productId, false)
-            } else if (quantityInput && parseInt(quantityInput.value) === 1) {
-                // Удаляем товар
-                removeFromCart(productId).then(() => {
-                    updateCartDisplay()
-                })
-            }
-        })
-    }
-
     // Обработчик для кнопки удаления
     const removeBtn = element.querySelector('.remove-item')
     if (removeBtn && !removeBtn.hasAttribute('data-listener-added')) {
@@ -408,8 +302,6 @@ const addEventListenersToElement = (element) => {
         })
     }
 }
-
-
 
 
 // Показываем прелоадер сразу при загрузке
