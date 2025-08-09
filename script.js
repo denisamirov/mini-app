@@ -1,8 +1,7 @@
-// Импортируем универсальную функцию getUserData и функции прелоадера
 import { getUserData, waitForTelegram, showPreloader, hidePreloader, waitForTelegramReady, setPreloaderText } from './telegram.js';
 
-// Импортируем функции из buy-button модуля
 import { getQuantityInputHTML } from './buy-button/buy-button.js';
+import { render } from './utils/render.js';
 
 const container = document.querySelector('.card-list')
 
@@ -11,7 +10,6 @@ container.innerHTML = ''
 const productTemplate = async (product) => {
     const user = await getUserData();
     const userData = localStorage.getItem(user.id);
-    console.log(user, userData, 'Подгрузка из локального хранилища')
     let buttonHTML = `<button class="buy-button">Добавить</button>`;
 
     if (userData) {
@@ -50,16 +48,14 @@ if (!response.ok) throw new Error('Ошибка загрузки товаров'
 
 const goods = await response.json()
 
-// Асинхронная функция для загрузки товаров
 const loadProducts = async () => {
-    document.querySelector('.title').innerHTML = 'Товары нашего магазина'
-    
-    for (const product of goods) {
-        const template = await productTemplate(product);
-        container.insertAdjacentHTML('beforeend', template);
-    }
+    await render({
+        source: goods,
+        container,
+        template: async (product) => await productTemplate(product),
+    })
 
-    // Загружаем buy-button.js после загрузки товаров
+    // Инициализируем контролы покупки после вставки
     const { initializeBuyButtons } = await import('./buy-button/buy-button.js');
     initializeBuyButtons();
     console.log('Main page: Products loaded successfully');
@@ -75,6 +71,7 @@ waitForTelegram(async () => {
         // Дополнительно ждем полной инициализации
         await waitForTelegramReady();
         
+        document.querySelector('.title').innerHTML = 'Товары нашего магазина'
         // Загружаем товары
         await loadProducts();
         

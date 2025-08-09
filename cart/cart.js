@@ -1,44 +1,13 @@
 // Импортируем универсальную функцию getUserData и функции прелоадера
 import { getUserData, waitForTelegram, showPreloader, hidePreloader, waitForTelegramReady, setPreloaderText } from '../telegram.js';
+import { render } from '../utils/render.js';
 
 // Функция для получения товаров из localStorage
 const getCartItems = async () => {
-    console.log('Cart: Getting user data...')
-    const user = await getUserData()
-    console.log('Cart: User ID:', user.id)
-
-    // Дополнительная проверка для Telegram Mini App
-    const telegramExists = typeof Telegram !== 'undefined' && Telegram && Telegram.WebApp;
-    if (telegramExists && user.id === 215430) {
-        console.log('Cart: Telegram Mini App detected but using fallback user ID, waiting...')
-        await new Promise(resolve => setTimeout(resolve, 500))
-
-        // Попробуем получить пользователя еще раз
-        const retryUser = await getUserData()
-        console.log('Cart: Retry User ID:', retryUser.id)
-
-        if (retryUser.id !== 215430) {
-            console.log('Cart: Successfully got real user ID on retry')
-            user.id = retryUser.id
-        }
-    }
-
-    const productListString = localStorage.getItem(user.id)
-    console.log('Cart: localStorage data for user', user.id, ':', productListString)
-
-    if (!productListString) {
-        console.log('Cart: No data in localStorage')
-        return []
-    }
-
-    try {
-        const items = JSON.parse(productListString)
-        console.log('Cart: Parsed items:', items)
-        return items
-    } catch (e) {
-        console.log('Error parsing cart items:', e)
-        return []
-    }
+    const { id } = await getUserData()
+    const raw = localStorage.getItem(id)
+    if (!raw) return []
+    try { return JSON.parse(raw) } catch { return [] }
 }
 
 // Функция для получения информации о товаре по ID
@@ -54,8 +23,6 @@ const getProductInfo = async (productId) => {
         return null
     }
 }
-
-// Редактирование количества товаров в корзине недоступно на странице корзины
 
 // Функция для удаления товара из корзины
 const removeFromCart = async (productId) => {
@@ -145,21 +112,21 @@ const setEmptyCartState = (isEmpty, refs) => {
     cartSummaryDiv.style.display = 'block'
 }
 
-// Рендер товаров корзины
+// Рендер товаров корзины (через универсальную утилиту)
 const renderCartItems = async (cartItems, container) => {
-    container.innerHTML = ''
-    for (const cartItem of cartItems) {
-        const productInfo = await getProductInfo(cartItem.id)
-        if (!productInfo) continue
-
-        const itemHTML = createCartItemHTML(productInfo, cartItem.count)
-        container.insertAdjacentHTML('beforeend', itemHTML)
-
-        const lastElement = container.lastElementChild
-        if (lastElement) {
-            addEventListenersToElement(lastElement)
+    await render({
+        source: cartItems,
+        container,
+        template: async (cartItem) => {
+            const productInfo = await getProductInfo(cartItem.id)
+            if (!productInfo) return null
+            return createCartItemHTML(productInfo, cartItem.count)
+        },
+        options: {
+            clearContainer: true,
+            afterInsert: (element) => addEventListenersToElement(element)
         }
-    }
+    })
 }
 
 // Обработчик кнопки оформления заказа
