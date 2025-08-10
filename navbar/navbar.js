@@ -1,4 +1,4 @@
-import { loadTelegramJS } from "../telegram.js"
+import { loadTelegramJS, initializePreloader } from "../telegram.js"
 
 // Загрузка Bootstrap CSS
 const loadBootstrapCSS = () => {
@@ -50,9 +50,49 @@ const loadNavBar = () => {
     attemptFetch()
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-    loadTelegramJS();
+
+const loadScript = () => {
+    const pathToTry = [
+        './buy-button/buy-button.js',
+        '../buy-button/buy-button.js'
+    ]
+
+    let currentAttempt = 0
+
+    const attemptFetch = () => {
+        fetch(pathToTry[currentAttempt])
+            .then(res => {
+                if (!res.ok) throw new Error('Script not found')
+            })
+            .then(r => {
+                const script = document.createElement('script');
+                script.src = pathToTry[currentAttempt];
+                script.defer = true;
+                document.head.appendChild(script);
+            })
+            .catch(err => {
+                currentAttempt++
+                if (currentAttempt < pathToTry.length) {
+                    attemptFetch()
+                } else {
+                    console.error('All attempts failed', err)
+                }
+            })
+    }
+
+    attemptFetch()
+}
+
+window.addEventListener('DOMContentLoaded', async() => {
+    // Инициализируем прелоадер первым
+    await initializePreloader();
+    
+    await loadTelegramJS();
     loadBootstrapCSS();
     loadBootstrapJS();
-    loadNavBar()
+    loadNavBar();
+})
+
+window.addEventListener('load', () => {
+    loadScript()
 })
