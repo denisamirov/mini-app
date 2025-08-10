@@ -44,9 +44,9 @@ const updateTheme = (root, tg) => {
 /** Универсальная функция для получения ID пользователя с ожиданием Telegram */
 export const getUserData = async () => {
     const testUser = { id: 215430 }
+    const initData = Telegram.WebApp.initData
 
-    if (Telegram.WebApp.initData) {
-        const initData = Telegram.WebApp.initData
+    if (initData) {
 
         const params = new URLSearchParams(initData)
         const userData = params.get('user')
