@@ -88,9 +88,10 @@ export const waitForTelegram = (callback) => {
 // Функция для ожидания полной загрузки Telegram WebApp
 export const waitForTelegramReady = () => {
     return new Promise((resolve) => {
-        const telegramExists = typeof Telegram !== 'undefined' && Telegram && Telegram.WebApp;
 
         const checkReady = () => {
+            const telegramExists = typeof Telegram !== 'undefined' && Telegram && Telegram.WebApp;
+
             if (telegramExists && Telegram.WebApp.isExpanded !== undefined) {
                 console.log('Telegram WebApp is now ready');
                 resolve();
