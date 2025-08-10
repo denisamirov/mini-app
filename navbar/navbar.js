@@ -84,10 +84,9 @@ const loadScript = () => {
 }
 
 window.addEventListener('DOMContentLoaded', async() => {
-    // Инициализируем прелоадер первым
     await initializePreloader();
     
-    await loadTelegramJS();
+    loadTelegramJS();
     loadBootstrapCSS();
     loadBootstrapJS();
     loadNavBar();

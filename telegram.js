@@ -1,6 +1,6 @@
 import { showPreloader, hidePreloader, setPreloaderText, initializePreloader } from './preloader/preloader.js';
 
-export const loadTelegramJS = async () => {
+export const loadTelegramJS = () => {
     const script = document.createElement('script')
     script.src = "https://telegram.org/js/telegram-web-app.js"
     script.defer = true
@@ -12,7 +12,7 @@ const init = () => {
     const tg = window.Telegram?.WebApp
 
     if (!tg) {
-        console.error('The TelegramJS was not uploaded, but continuing...')
+        console.error('The TelegramJS was not uploaded')
         return;
     }
 
