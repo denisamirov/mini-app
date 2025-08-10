@@ -5,7 +5,7 @@ export const loadTelegramJS = async () => {
     script.src = "https://telegram.org/js/telegram-web-app.js"
     script.defer = true
     document.head.insertBefore(script, document.head.firstChild)
-    script.onload = () => init()
+    script.onload = init
 }
 
 const init = () => {
