@@ -90,20 +90,15 @@ export const waitForTelegramReady = () => {
     return new Promise((resolve) => {
         const telegramExists = typeof Telegram !== 'undefined' && Telegram && Telegram.WebApp;
 
-        if (telegramExists && Telegram.WebApp.isExpanded !== undefined) {
-            console.log('Telegram WebApp already ready');
-            resolve();
-        } else {
-            const checkReady = () => {
-                if (Telegram?.WebApp && Telegram.WebApp.isExpanded !== undefined) {
-                    console.log('Telegram WebApp is now ready');
-                    resolve();
-                } else {
-                    setTimeout(checkReady, 100);
-                }
-            };
-            checkReady();
-        }
+        const checkReady = () => {
+            if (telegramExists && Telegram.WebApp.isExpanded !== undefined) {
+                console.log('Telegram WebApp is now ready');
+                resolve();
+            } else {
+                setTimeout(checkReady, 100);
+            }
+        };
+        checkReady();
     });
 }
 
